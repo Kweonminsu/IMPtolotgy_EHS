@@ -1566,29 +1566,27 @@
         document.addEventListener("mouseup", stopResize);
       };
 
+      // resizeMove 함수 - 창 크기와 무관하게 패널 크기 자유 조절
+      // 역할: maxWidth 계산을 제거해서 창이 작아도 패널이 최소너비 이상으로 자유롭게 늘어나고 줄어들게 함
       function resizeMove(e) {
         if (!isResizing) return;
-
-        const container = document.getElementById("panel-canvas");
-        const containerWidth = container.offsetWidth;
 
         // 새로운 크기 계산
         let newWidth = startWidth + (e.clientX - startX);
         let newHeight = startHeight + (e.clientY - startY);
 
-        // 최소/최대 크기 제한
+        // 최소/최대 크기 제한 (maxWidth 완전 제거)
         const minWidth = 300;
-        const maxWidth = Math.floor(containerWidth / 3) - 20; // 3열 유지
         const minHeight = 200;
         const maxHeight = 800;
 
-        newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+        newWidth = Math.max(minWidth, newWidth); // 최대 너비 제한 없음
         newHeight = Math.max(minHeight, Math.min(maxHeight, newHeight));
 
         // 독립적으로 크기 설정
         panel.style.width = newWidth + "px";
         panel.style.height = newHeight + "px";
-        panel.style.flex = "0 0 auto"; // flexbox에서 크기 고정
+        panel.style.flex = "0 0 auto";
       }
 
       function stopResize() {
@@ -1609,9 +1607,9 @@
   // 역할: renderAll() 후 각 패널의 실제 콘텐츠 높이를 측정해 자연스럽게 height 설정
   function setInitialPanelSizes() {
     document.querySelectorAll(".draggable-panel").forEach((panel) => {
-      // 너비는 기존 최소/최대 유지
+      // 너비는 최소만 유지
       panel.style.minWidth = "300px";
-      panel.style.maxWidth = "calc(33.333% - 1rem)";
+      panel.style.maxWidth = "none"; // 핵심: 최대 제한 없음
       panel.style.flex = "0 0 auto";
 
       // 높이는 콘텐츠에 맞춤

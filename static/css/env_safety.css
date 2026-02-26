@@ -1812,3 +1812,59 @@
   opacity: 0.2;
   transition: none;
 }
+/* 모든 테이블에 동일한 예쁜 스타일 적용 (DOM9뿐 아니라 나중에 추가되는 테이블도 자동 적용) */
+.env-safety-page .draggable-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--lighter-bg);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  margin-top: 4px;
+}
+
+.env-safety-page .draggable-panel table th {
+  background: #f8fafc;
+  white-space: nowrap; /* 텍스트 줄바꿈 방지: 셀이 글자보다 작아지지 않음 */
+  min-width: fit-content; /* 콘텐츠 크기에 맞춰 최소 너비 확보 */
+  color: var(--gray-color);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 14px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.env-safety-page .draggable-panel table td {
+  padding: 13px 12px;
+  font-size: 0.82rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--light-color);
+  vertical-align: middle;
+}
+
+.env-safety-page .draggable-panel table tr:hover {
+  background: var(--primary-dim);
+  transition: background 0.15s;
+}
+
+.env-safety-page .draggable-panel table tr:last-child td {
+  border-bottom: none;
+}
+
+.env-safety-page .draggable-panel table td:first-child {
+  font-family: var(--font-mono);
+  color: var(--primary-color);
+  font-weight: 600;
+  width: 50px;
+}
+
+/* zebra stripe */
+.env-safety-page .draggable-panel table tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.015);
+}
