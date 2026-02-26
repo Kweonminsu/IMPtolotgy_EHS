@@ -1,4 +1,3 @@
-// ✅ 추가: 파일 맨 위에 IIFE 시작
 /**
  * env_safety.js  v4 (개선 버전)
  * ─────────────────────────────────────────────
@@ -1240,60 +1239,101 @@
   const STORAGE_KEY = "env_safety_panel_layout_v1";
 
   /* 기본 레이아웃 (col x row 기준, 각 패널 크기 포함) */
-  /* 패널 순서 기반 레이아웃 */
+  // 원하는 초기 배치 순서 (순서대로 왼쪽 위부터 채워짐)
+  // 역할: 페이지 처음 로드될 때 패널들이 이 순서로 배치됨
   const DEFAULT_LAYOUT = [
-    "dom2",
-    "dom3",
-    "dom4",
-    "dom5",
-    "dom6",
-    "dom7",
-    "dom8",
-    "dom9",
+    "dom2", // 이슈 목록 (가장 왼쪽 위)
+    "dom8", // 차트
+    "dom9", // 테이블
+    "dom3", // 체크리스트
+    "dom4", // To-Do
+    "dom6", // 타임라인
+    "dom5", // 카테고리
+    "dom7", // 위험도 요약 (오른쪽 아래)
   ];
 
   let layout = [];
   let dragState = null;
   let cloneEl = null;
 
+  // 크기 정보도 복원
   function loadLayout() {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
 
-      // 배열인지 확인
-      if (Array.isArray(saved)) return saved;
+      // 새 형식 (객체 배열)
+      if (
+        Array.isArray(saved) &&
+        saved.length > 0 &&
+        typeof saved[0] === "object"
+      ) {
+        return saved;
+      }
+
+      // 구 형식 (문자열 배열) - 호환성 유지
+      if (
+        Array.isArray(saved) &&
+        saved.length > 0 &&
+        typeof saved[0] === "string"
+      ) {
+        return saved.map((id) => ({ id, width: null, height: null }));
+      }
     } catch {}
 
-    return [...DEFAULT_LAYOUT];
+    // 기본값
+    return DEFAULT_LAYOUT.map((id) => ({ id, width: null, height: null }));
   }
 
   // DOM 실제 순서 기반으로 저장
+  //  순서 + 크기 정보 저장
   function saveLayout() {
     try {
       const container = document.getElementById("panel-canvas");
-      layout = Array.from(container.querySelectorAll(".draggable-panel")).map(
-        (p) => p.id,
-      );
+      const panels = Array.from(container.querySelectorAll(".draggable-panel"));
+
+      layout = panels.map((p) => ({
+        id: p.id,
+        width: p.style.width || null,
+        height: p.style.height || null,
+      }));
+
       localStorage.setItem(STORAGE_KEY, JSON.stringify(layout));
     } catch {}
   }
+  //  순서 + 크기 복원
   function applyLayout() {
     const container = document.getElementById("panel-canvas");
-    layout.forEach((id) => {
+
+    layout.forEach((item) => {
+      const id = typeof item === "string" ? item : item.id;
       const el = document.getElementById(id);
-      if (el) container.appendChild(el);
+
+      if (el) {
+        container.appendChild(el);
+
+        // 저장된 크기 복원
+        if (typeof item === "object" && item.width && item.height) {
+          el.style.width = item.width;
+          el.style.height = item.height;
+          el.style.flex = "0 0 auto";
+        }
+      }
     });
   }
   /* 그리드 기반 자동 정렬 */
 
   function resetLayout() {
-    layout = JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
+    layout = DEFAULT_LAYOUT.map((id) => ({ id, width: null, height: null }));
     saveLayout();
     applyLayout();
+
+    // 초기 크기 재설정
+    setInitialPanelSizes();
+
     showToast("레이아웃이 초기화되었습니다.");
   }
 
-  /* 드래그 시작 */
+  /* 드롭 위치 표시 + 원본 숨김 개선 */
   function onDragStart(e, panelEl) {
     if (e.button !== 0) return;
     e.preventDefault();
@@ -1306,57 +1346,110 @@
       offsetY: e.clientY - rect.top,
     };
 
-    /* 드래그 클론 */
+    // 클론 생성 (원본과 동일하게 보이도록)
     cloneEl = panelEl.cloneNode(true);
     cloneEl.classList.add("drag-clone");
+    cloneEl.classList.remove("is-dragging"); // is-dragging 클래스 제거
     cloneEl.style.position = "fixed";
     cloneEl.style.width = rect.width + "px";
     cloneEl.style.height = rect.height + "px";
     cloneEl.style.left = rect.left + "px";
     cloneEl.style.top = rect.top + "px";
     cloneEl.style.pointerEvents = "none";
+    cloneEl.style.zIndex = "10000";
     document.body.appendChild(cloneEl);
 
-    panelEl.classList.add("is-dragging");
+    // 원본은 완전히 투명하게 (is-dragging 대신)
+    panelEl.style.opacity = "0";
+    panelEl.style.pointerEvents = "none";
 
     document.addEventListener("mousemove", onDragMove);
     document.addEventListener("mouseup", onDragEnd);
   }
 
+  /* 드롭 위치 시각적 표시 */
   function onDragMove(e) {
     if (!dragState || !cloneEl) return;
 
+    // 클론 위치 업데이트
     const x = e.clientX - dragState.offsetX;
     const y = e.clientY - dragState.offsetY;
 
     cloneEl.style.left = x + "px";
     cloneEl.style.top = y + "px";
+
+    // 드롭 가능 위치 표시
+    const container = document.getElementById("panel-canvas");
+    const afterElement = getDragAfterElement(container, e.clientY);
+
+    // 기존 표시 제거
+    document.querySelectorAll(".drop-indicator").forEach((el) => el.remove());
+
+    // 새 위치 표시 추가
+    const indicator = document.createElement("div");
+    indicator.className = "drop-indicator";
+    indicator.style.cssText = `
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 9999;
+    box-shadow: 0 0 8px var(--primary-color);
+  `;
+
+    if (afterElement == null) {
+      // 맨 끝에 추가
+      const lastPanel = container.querySelector(".draggable-panel:last-child");
+      if (lastPanel) {
+        const rect = lastPanel.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        indicator.style.top = rect.bottom - containerRect.top + "px";
+        container.appendChild(indicator);
+      }
+    } else {
+      // 특정 요소 앞에 추가
+      const rect = afterElement.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      indicator.style.top = rect.top - containerRect.top - 2 + "px";
+      container.appendChild(indicator);
+    }
   }
 
-  // try-finally로 안전하게
+  /* 원본 복원 + 인디케이터 제거 */
   function onDragEnd(e) {
     if (!dragState) return;
 
     try {
       const panelEl = document.getElementById(dragState.panelId);
+
       if (panelEl) {
-        panelEl.classList.remove("is-dragging");
+        // 원본 다시 보이게
+        panelEl.style.opacity = "";
+        panelEl.style.pointerEvents = "";
       }
 
+      // 위치 재정렬
       reorderPanels(e);
       saveLayout();
 
+      // 클론 제거
       if (cloneEl) {
         cloneEl.remove();
         cloneEl = null;
       }
 
+      // 드롭 인디케이터 제거
+      document.querySelectorAll(".drop-indicator").forEach((el) => el.remove());
+
+      // 고스트 제거
       const ghost = document.getElementById("drop-ghost");
       if (ghost) {
         ghost.classList.remove("visible");
       }
     } finally {
-      // 항상 리스너 제거 보장
       cleanupDragListeners();
       dragState = null;
     }
@@ -1368,31 +1461,35 @@
   }
 
   //  패널 자동 정렬
-  function reorderPanels() {
+  function reorderPanels(event) {
     const container = document.getElementById("panel-canvas");
-    const panels = Array.from(container.querySelectorAll(".draggable-panel"));
-
-    // dragging 중이던 패널
-    const dragged = panels.find((p) => p.id === dragState.panelId);
+    const dragged = document.getElementById(dragState.panelId);
 
     if (!dragged) return;
 
-    // 마우스 위치 기준으로 삽입 위치 계산
     const afterElement = getDragAfterElement(container, event.clientY);
 
-    if (afterElement == null) {
-      container.appendChild(dragged);
-    } else {
-      container.insertBefore(dragged, afterElement);
-    }
+    // 부드러운 이동 애니메이션
+    const currentIndex = Array.from(container.children).indexOf(dragged);
+    const targetIndex = afterElement
+      ? Array.from(container.children).indexOf(afterElement)
+      : container.children.length;
 
-    saveLayout();
+    // 실제로 위치가 변경되는 경우에만 이동
+    if (currentIndex !== targetIndex && currentIndex !== targetIndex - 1) {
+      if (afterElement == null) {
+        container.appendChild(dragged);
+      } else {
+        container.insertBefore(dragged, afterElement);
+      }
+    }
   }
   // 현재 마우스 위치 아래에 있어야 할 패널 계산
   function getDragAfterElement(container, y) {
-    const elements = [
-      ...container.querySelectorAll(".draggable-panel:not(.is-dragging)"),
-    ];
+    const draggingId = dragState ? dragState.panelId : null;
+    const elements = Array.from(
+      container.querySelectorAll(".draggable-panel"),
+    ).filter((el) => el.id !== draggingId && el.style.opacity !== "0");
 
     return elements.reduce(
       (closest, child) => {
@@ -1448,11 +1545,12 @@
   }
 
   // 핸들러 저장 및 재사용 로직 추가
+
+  // 독립적인 width/height 조절 + 최소/최대 크기 제한
   function initResize() {
     document.querySelectorAll(".draggable-panel").forEach((panel) => {
       let resizeHandle = panel.querySelector(".resize-handle");
 
-      // 이미 있으면 재사용
       if (!resizeHandle) {
         resizeHandle = document.createElement("div");
         resizeHandle.classList.add("resize-handle");
@@ -1478,21 +1576,63 @@
       function resizeMove(e) {
         if (!isResizing) return;
 
-        panel.style.width = startWidth + (e.clientX - startX) + "px";
-        panel.style.height = startHeight + (e.clientY - startY) + "px";
+        const container = document.getElementById("panel-canvas");
+        const containerWidth = container.offsetWidth;
+
+        // 새로운 크기 계산
+        let newWidth = startWidth + (e.clientX - startX);
+        let newHeight = startHeight + (e.clientY - startY);
+
+        // 최소/최대 크기 제한
+        const minWidth = 300;
+        const maxWidth = Math.floor(containerWidth / 3) - 20; // 3열 유지
+        const minHeight = 200;
+        const maxHeight = 800;
+
+        newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+        newHeight = Math.max(minHeight, Math.min(maxHeight, newHeight));
+
+        // 독립적으로 크기 설정
+        panel.style.width = newWidth + "px";
+        panel.style.height = newHeight + "px";
+        panel.style.flex = "0 0 auto"; // flexbox에서 크기 고정
       }
 
       function stopResize() {
         isResizing = false;
         document.removeEventListener("mousemove", resizeMove);
         document.removeEventListener("mouseup", stopResize);
+
+        // 크기 조절 완료 후 레이아웃 저장
+        saveLayout();
       }
 
-      // 핸들러 저장
       resizeHandle._resizeHandler = handleMouseDown;
       resizeHandle.addEventListener("mousedown", handleMouseDown);
     });
   }
+
+  // 콘텐츠 양에 따라 초기 높이 자동 계산 + 최대 높이만 제한
+  // 역할: renderAll() 후 각 패널의 실제 콘텐츠 높이를 측정해 자연스럽게 height 설정
+  function setInitialPanelSizes() {
+    document.querySelectorAll(".draggable-panel").forEach((panel) => {
+      // 너비는 기존 최소/최대 유지
+      panel.style.minWidth = "300px";
+      panel.style.maxWidth = "calc(33.333% - 1rem)";
+      panel.style.flex = "0 0 auto";
+
+      // 높이는 콘텐츠에 맞춤
+      panel.style.height = "auto"; // 먼저 auto로 풀어줌
+      const headerHeight = 70; // drag-handle + block-header 대략 높이
+      const contentHeight = panel.scrollHeight;
+
+      let newHeight = Math.max(280, contentHeight + headerHeight + 20);
+      newHeight = Math.min(newHeight, 800); // 최대 높이만 800px 제한
+
+      panel.style.height = newHeight + "px";
+    });
+  }
+
   /* ══════════════════════════════════════════════
    ⑪ 이벤트 바인딩
 ══════════════════════════════════════════════ */
@@ -1625,11 +1765,21 @@
   /* ══════════════════════════════════════════════
    ⑫ 초기화
 ══════════════════════════════════════════════ */
+  //  초기 크기 설정 추가
   document.addEventListener("DOMContentLoaded", async () => {
     bindEvents();
 
     layout = loadLayout();
     applyLayout();
+
+    // 초기 크기 설정 (저장된 크기가 없는 경우)
+    const hasCustomSizes = layout.some(
+      (item) => typeof item === "object" && item.width && item.height,
+    );
+
+    if (!hasCustomSizes) {
+      setInitialPanelSizes();
+    }
 
     initDragAndDrop();
     initResize();
@@ -1654,6 +1804,7 @@
     // 동적 패널 추가/제거 시 호출
     refreshPanelEvents: () => {
       cleanupPanelEvents();
+      setInitialPanelSizes();
       initDragAndDrop();
       initResize();
     },

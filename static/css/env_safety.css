@@ -205,28 +205,73 @@
   width: 100%;
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  min-height: calc(100vh - 140px);
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  align-items: flex-start; /* 상단 정렬로 독립적 높이 */
+  position: relative;
 }
 
 /* ════════════════════════════════════════
    드래그 가능 패널 공통
 ════════════════════════════════════════ */
+/* 독립적 크기 조절 + 내부 스크롤 + flexbox 지원 */
 .env-safety-page .draggable-panel {
-  position: relative; /* absolute → relative 변경 */
-
+  position: relative;
   background-color: var(--light-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 0;
   box-shadow: var(--shadow);
-  overflow: hidden;
   transition:
     box-shadow 0.2s,
     border-color 0.2s;
 
-  width: calc(50% - 8px);
-  min-width: 280px;
+  /* Flexbox 레이아웃 */
+  display: flex;
+  flex-direction: column;
+
+  /* 크기 조절 설정 */
+  flex: 0 0 auto; /* 크기 고정, 자동 늘어나지 않음 */
+  min-width: 300px;
+  max-width: calc(33.333% - 1rem); /* 최대 3열 유지 */
   min-height: 200px;
+  max-height: 1200px;
+
+  /* 초기 크기는 JS에서 설정 */
+  width: 450px;
+  height: 400px;
+
+  /* 내부 스크롤을 위한 설정 */
+  overflow: hidden;
+}
+
+/* 패널 내부 콘텐츠 영역 스크롤 */
+/* 역할: resize할 때 todo-rollup, issue-list 등이 패널 높이를 100% 채우며 스크롤만 생기게 */
+.env-safety-page .draggable-panel > .issue-list,
+.env-safety-page .draggable-panel > #dom3-content,
+.env-safety-page .draggable-panel > .todo-rollup,
+.env-safety-page .draggable-panel > .category-stats,
+.env-safety-page .draggable-panel > .timeline,
+.env-safety-page .draggable-panel > .risk-summary,
+.env-safety-page .draggable-panel > #echart-risk,
+.env-safety-page .draggable-panel > #issue-table-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1 1 auto; /* 핵심: flex-grow + flex-shrink 모두 허용 */
+  min-height: 0;
+  max-height: none; /* 이전에 고정됐던 최대 높이 완전 해제 */
+  padding: 14px 16px; /* 1번 요청에서 추가한 여백 유지 */
+}
+
+/* block-header, drag-handle은 고정 */
+.env-safety-page .draggable-panel > .drag-handle,
+.env-safety-page .draggable-panel > .dom-label,
+.env-safety-page .draggable-panel > .block-header,
+.env-safety-page .draggable-panel > .resize-handle,
+.env-safety-page .draggable-panel > .panel-loading {
+  flex-shrink: 0; /* 크기 고정 */
 }
 
 .env-safety-page .draggable-panel::before {
@@ -248,7 +293,6 @@
 /* 드래그 중 패널 */
 .env-safety-page .draggable-panel.is-dragging {
   opacity: 0.35;
-  transform: scale(1.02);
   border: 2px dashed rgba(0, 240, 255, 0.4);
   box-shadow: none;
   transition: none;
@@ -273,15 +317,49 @@
 
 /* ── 드래그 핸들 ── */
 .resize-handle {
-  width: 12px;
-  height: 12px;
+  --handle-size: 10px;
+
+  width: var(--handle-size);
+  height: var(--handle-size);
   position: absolute;
-  right: 4px;
-  bottom: 4px;
+  right: 0;
+  bottom: 0;
+
   cursor: nwse-resize;
-  background: #999;
-  border-radius: 2px;
+
+  /* 메인 색상 + 살짝 투명도 낮춤 */
+  background: var(--primary-color);
+  opacity: 0.22;
+
+  /* 둥글게 + 살짝 안쪽으로 여백 */
+  border-radius: 50% 0 8px 0;
+
+  /* 호버 시 더 선명하게 */
+  transition:
+    opacity var(--transition-speed),
+    transform var(--transition-speed);
 }
+
+.resize-handle:hover,
+.resize-handle:active {
+  opacity: 0.45;
+  transform: scale(1.15);
+}
+
+/* 아주 미세한 그라데이션 + 그림자 효과로 입체감 (선택적이지만 추천) */
+.resize-handle::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.35),
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
 .env-safety-page .drag-handle {
   display: flex;
   align-items: center;
@@ -361,38 +439,6 @@
   padding: 12px 14px;
 }
 
-/* 패널 내부 스크롤 영역은 panel-body 안에서 처리 */
-.env-safety-page .draggable-panel .issue-list,
-.env-safety-page .draggable-panel .checklist-rollup,
-.env-safety-page .draggable-panel .todo-rollup,
-.env-safety-page .draggable-panel .category-stats,
-.env-safety-page .draggable-panel .timeline,
-.env-safety-page .draggable-panel .risk-summary,
-.env-safety-page .draggable-panel .overall-progress {
-  padding: 0 14px;
-}
-.env-safety-page .draggable-panel .issue-list {
-  padding-bottom: 12px;
-}
-.env-safety-page .draggable-panel .checklist-rollup {
-  padding-bottom: 12px;
-}
-.env-safety-page .draggable-panel .todo-rollup {
-  padding-bottom: 12px;
-}
-.env-safety-page .draggable-panel .category-stats {
-  padding-bottom: 12px;
-}
-.env-safety-page .draggable-panel .timeline {
-  padding-bottom: 12px;
-}
-.env-safety-page .draggable-panel .risk-summary {
-  padding-bottom: 12px;
-}
-.env-safety-page .draggable-panel .overall-progress {
-  padding-top: 10px;
-}
-
 /* ── 드롭 가이드 고스트 ── */
 .env-safety-page .drop-ghost {
   position: absolute;
@@ -406,6 +452,26 @@
 }
 .env-safety-page .drop-ghost.visible {
   display: block;
+}
+
+/* 스크롤바 스타일 */
+.env-safety-page .draggable-panel ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.env-safety-page .draggable-panel ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.env-safety-page .draggable-panel ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.env-safety-page .draggable-panel ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
 }
 
 /* ════════════════════════════════════════
@@ -796,7 +862,6 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 260px;
   overflow-y: auto;
   padding-right: 2px;
 }
@@ -1735,4 +1800,30 @@
 .env-safety-page ::-webkit-scrollbar-thumb {
   background: var(--lighter-bg);
   border-radius: 3px;
+}
+
+/* 드롭 위치 표시선 */
+.env-safety-page .drop-indicator {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--primary-color);
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 9999;
+  box-shadow: 0 0 10px var(--primary-color);
+  animation: pulse-indicator 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse-indicator {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scaleY(1.5);
+  }
 }
