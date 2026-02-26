@@ -202,30 +202,33 @@
    패널 캔버스 (드래그 자유 배치)
 ════════════════════════════════════════ */
 .env-safety-page .panel-canvas {
-  position: relative;
   width: 100%;
-  min-height: 900px; /* 패널들이 들어갈 여유 공간 */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 /* ════════════════════════════════════════
    드래그 가능 패널 공통
 ════════════════════════════════════════ */
 .env-safety-page .draggable-panel {
-  position: absolute;
+  position: relative; /* absolute → relative 변경 */
+
   background-color: var(--light-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 0; /* 드래그 핸들이 상단 차지 */
+  padding: 0;
   box-shadow: var(--shadow);
   overflow: hidden;
   transition:
     box-shadow 0.2s,
     border-color 0.2s;
-  /* 기본 크기 */
-  width: calc(50% - 10px);
+
+  width: calc(50% - 8px);
   min-width: 280px;
   min-height: 200px;
 }
+
 .env-safety-page .draggable-panel::before {
   content: "";
   position: absolute;
@@ -245,6 +248,7 @@
 /* 드래그 중 패널 */
 .env-safety-page .draggable-panel.is-dragging {
   opacity: 0.35;
+  transform: scale(1.02);
   border: 2px dashed rgba(0, 240, 255, 0.4);
   box-shadow: none;
   transition: none;
@@ -268,6 +272,16 @@
 }
 
 /* ── 드래그 핸들 ── */
+.resize-handle {
+  width: 12px;
+  height: 12px;
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  cursor: nwse-resize;
+  background: #999;
+  border-radius: 2px;
+}
 .env-safety-page .drag-handle {
   display: flex;
   align-items: center;

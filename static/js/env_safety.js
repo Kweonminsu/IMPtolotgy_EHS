@@ -1143,27 +1143,31 @@ async function confirmDetailTodoAdd() {
 const STORAGE_KEY = "env_safety_panel_layout_v1";
 
 /* 기본 레이아웃 (col x row 기준, 각 패널 크기 포함) */
-const DEFAULT_LAYOUT = {
-  dom2: { x: 0, y: 0, w: 580, h: 420 },
-  dom3: { x: 0, y: 436, w: 580, h: 360 },
-  dom4: { x: 0, y: 812, w: 580, h: 320 },
-  dom5: { x: 596, y: 0, w: 500, h: 260 },
-  dom6: { x: 596, y: 276, w: 500, h: 300 },
-  dom7: { x: 596, y: 592, w: 500, h: 240 },
-  dom8: { x: 1120, y: 0, w: 500, h: 360 },
-  dom9: { x: 1120, y: 380, w: 700, h: 420 },
-};
+/* 패널 순서 기반 레이아웃 */
+const DEFAULT_LAYOUT = [
+  "dom2",
+  "dom3",
+  "dom4",
+  "dom5",
+  "dom6",
+  "dom7",
+  "dom8",
+  "dom9",
+];
 
-let layout = {};
+let layout = [];
 let dragState = null;
 let cloneEl = null;
 
 function loadLayout() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (saved && typeof saved === "object") return saved;
+
+    // 배열인지 확인
+    if (Array.isArray(saved)) return saved;
   } catch {}
-  return JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
+
+  return [...DEFAULT_LAYOUT];
 }
 
 function saveLayout() {
@@ -1171,25 +1175,14 @@ function saveLayout() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(layout));
   } catch {}
 }
-
 function applyLayout() {
-  const canvas = document.getElementById("panel-canvas");
-  let maxBottom = 0;
-
-  Object.entries(layout).forEach(([id, pos]) => {
+  const container = document.getElementById("panel-canvas");
+  layout.forEach((id) => {
     const el = document.getElementById(id);
-    if (!el) return;
-    el.style.left = pos.x + "px";
-    el.style.top = pos.y + "px";
-    el.style.width = pos.w + "px";
-    // 높이는 콘텐츠에 맞게 자동 (min-height만 지정)
-    if (pos.h) el.style.minHeight = pos.h + "px";
-    maxBottom = Math.max(maxBottom, pos.y + (pos.h || el.offsetHeight) + 20);
+    if (el) container.appendChild(el);
   });
-
-  // 캔버스 높이 확보
-  canvas.style.minHeight = maxBottom + "px";
 }
+/* 그리드 기반 자동 정렬 */
 
 function resetLayout() {
   layout = JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
@@ -1261,40 +1254,19 @@ function onDragEnd(e) {
   if (!dragState) return;
 
   const panelEl = document.getElementById(dragState.panelId);
-  const canvasRect = document
-    .getElementById("panel-canvas")
-    .getBoundingClientRect();
-
-  /* 새 위치 계산 (캔버스 기준) */
-  let newX = e.clientX - dragState.offsetX - canvasRect.left;
-  let newY = e.clientY - dragState.offsetY - canvasRect.top;
-  newX = Math.max(0, newX);
-  newY = Math.max(0, newY);
-
-  /* 레이아웃 업데이트 */
-  layout[dragState.panelId].x = Math.round(newX);
-  layout[dragState.panelId].y = Math.round(newY);
-
-  /* 겹침 해결 */
-  resolveCollision(dragState.panelId);
-
-  saveLayout();
-  applyLayout();
 
   panelEl.classList.remove("is-dragging");
 
-  /* 캔버스 높이 재조정 */
-  const maxBottom = Object.entries(layout).reduce((acc, [id, pos]) => {
-    const el = document.getElementById(id);
-    return Math.max(acc, pos.y + (el ? el.offsetHeight : pos.h || 300) + 20);
-  }, 600);
-  document.getElementById("panel-canvas").style.minHeight = maxBottom + "px";
+  // 자동 재정렬 실행
+  reorderPanels(e);
 
-  /* 정리 */
+  saveLayout();
+
   if (cloneEl) {
     cloneEl.remove();
     cloneEl = null;
   }
+
   document.getElementById("drop-ghost").classList.remove("visible");
   dragState = null;
 
@@ -1302,35 +1274,47 @@ function onDragEnd(e) {
   document.removeEventListener("mouseup", onDragEnd);
 }
 
-/* 패널 겹침 검사 */
-function isOverlapping(a, b) {
-  return !(
-    a.x + a.w <= b.x ||
-    a.x >= b.x + b.w ||
-    a.y + a.h <= b.y ||
-    a.y >= b.y + b.h
-  );
+//  패널 자동 정렬
+function reorderPanels() {
+  const container = document.getElementById("panel-canvas");
+  const panels = Array.from(container.querySelectorAll(".draggable-panel"));
+
+  // dragging 중이던 패널
+  const dragged = panels.find((p) => p.id === dragState.panelId);
+
+  if (!dragged) return;
+
+  // 마우스 위치 기준으로 삽입 위치 계산
+  const afterElement = getDragAfterElement(container, event.clientY);
+
+  if (afterElement == null) {
+    container.appendChild(dragged);
+  } else {
+    container.insertBefore(dragged, afterElement);
+  }
+
+  saveLayout();
 }
+// 현재 마우스 위치 아래에 있어야 할 패널 계산
+function getDragAfterElement(container, y) {
+  const elements = [
+    ...container.querySelectorAll(".draggable-panel:not(.is-dragging)"),
+  ];
 
-/* 겹치면 아래로 자동 이동 */
-function resolveCollision(panelId) {
-  const moving = layout[panelId];
+  return elements.reduce(
+    (closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
 
-  let collided;
-  do {
-    collided = false;
-
-    for (const [id, pos] of Object.entries(layout)) {
-      if (id === panelId) continue;
-
-      if (isOverlapping(moving, pos)) {
-        moving.y = pos.y + pos.h + 20; // 아래로 밀기
-        collided = true;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
       }
-    }
-  } while (collided);
+    },
+    { offset: Number.NEGATIVE_INFINITY },
+  ).element;
 }
-
 function initDragAndDrop() {
   document
     .querySelectorAll(".env-safety-page .draggable-panel")
