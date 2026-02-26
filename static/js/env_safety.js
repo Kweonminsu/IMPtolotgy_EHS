@@ -1193,42 +1193,29 @@ function resetLayout() {
 
 /* 드래그 시작 */
 function onDragStart(e, panelEl) {
-  if (e.button !== 0) return; // 좌클릭만
+  if (e.button !== 0) return;
   e.preventDefault();
 
   const rect = panelEl.getBoundingClientRect();
-  const canvasRect = document
-    .getElementById("panel-canvas")
-    .getBoundingClientRect();
 
   dragState = {
     panelId: panelEl.id,
     offsetX: e.clientX - rect.left,
     offsetY: e.clientY - rect.top,
-    canvasLeft: canvasRect.left,
-    canvasTop: canvasRect.top,
   };
 
-  /* 드래그 클론 생성 */
+  /* 드래그 클론 */
   cloneEl = panelEl.cloneNode(true);
   cloneEl.classList.add("drag-clone");
+  cloneEl.style.position = "fixed";
   cloneEl.style.width = rect.width + "px";
   cloneEl.style.height = rect.height + "px";
-  cloneEl.style.left = e.clientX - dragState.offsetX + "px";
-  cloneEl.style.top = e.clientY - dragState.offsetY + "px";
+  cloneEl.style.left = rect.left + "px";
+  cloneEl.style.top = rect.top + "px";
   cloneEl.style.pointerEvents = "none";
   document.body.appendChild(cloneEl);
 
-  /* 원본 패널 흐리게 */
   panelEl.classList.add("is-dragging");
-
-  /* 드롭 고스트 */
-  const ghost = document.getElementById("drop-ghost");
-  ghost.style.left = layout[panelEl.id].x + "px";
-  ghost.style.top = layout[panelEl.id].y + "px";
-  ghost.style.width = rect.width + "px";
-  ghost.style.height = rect.height + "px";
-  ghost.classList.add("visible");
 
   document.addEventListener("mousemove", onDragMove);
   document.addEventListener("mouseup", onDragEnd);
@@ -1239,15 +1226,9 @@ function onDragMove(e) {
 
   const x = e.clientX - dragState.offsetX;
   const y = e.clientY - dragState.offsetY;
+
   cloneEl.style.left = x + "px";
   cloneEl.style.top = y + "px";
-
-  /* 고스트를 캔버스 내 위치로 */
-  const ghost = document.getElementById("drop-ghost");
-  const cx = Math.max(0, e.clientX - dragState.offsetX - dragState.canvasLeft);
-  const cy = Math.max(0, e.clientY - dragState.offsetY - dragState.canvasTop);
-  ghost.style.left = cx + "px";
-  ghost.style.top = cy + "px";
 }
 
 function onDragEnd(e) {
@@ -1324,7 +1305,42 @@ function initDragAndDrop() {
       handle.addEventListener("mousedown", (e) => onDragStart(e, panel));
     });
 }
+function initResize() {
+  document.querySelectorAll(".draggable-panel").forEach((panel) => {
+    const handle = document.createElement("div");
+    handle.classList.add("resize-handle");
+    panel.appendChild(handle);
 
+    let isResizing = false;
+    let startX, startY, startWidth, startHeight;
+
+    handle.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
+      isResizing = true;
+
+      startX = e.clientX;
+      startY = e.clientY;
+      startWidth = panel.offsetWidth;
+      startHeight = panel.offsetHeight;
+
+      document.addEventListener("mousemove", resizeMove);
+      document.addEventListener("mouseup", stopResize);
+    });
+
+    function resizeMove(e) {
+      if (!isResizing) return;
+
+      panel.style.width = startWidth + (e.clientX - startX) + "px";
+      panel.style.height = startHeight + (e.clientY - startY) + "px";
+    }
+
+    function stopResize() {
+      isResizing = false;
+      document.removeEventListener("mousemove", resizeMove);
+      document.removeEventListener("mouseup", stopResize);
+    }
+  });
+}
 /* ══════════════════════════════════════════════
    ⑪ 이벤트 바인딩
 ══════════════════════════════════════════════ */
@@ -1448,6 +1464,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   /* 드래그 초기화 */
   initDragAndDrop();
+  initResize();
 
   /* 데이터 로드 (API 호출) */
   await loadAllData();
