@@ -235,9 +235,9 @@
   /* 크기 조절 설정 */
   flex: 0 0 auto; /* 크기 고정, 자동 늘어나지 않음 */
   min-width: 300px;
-  max-width: calc(33.333% - 1rem); /* 최대 3열 유지 */
+  max-width: none; /* 제한 완전 제거 → 풀 너비 가능 */
   min-height: 200px;
-  max-height: 1200px;
+  max-height: 800px;
 
   /* 초기 크기는 JS에서 설정 */
   width: 450px;
@@ -1802,28 +1802,13 @@
   border-radius: 3px;
 }
 
-/* 드롭 위치 표시선 */
-.env-safety-page .drop-indicator {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--primary-color);
-  border-radius: 2px;
-  pointer-events: none;
-  z-index: 9999;
-  box-shadow: 0 0 10px var(--primary-color);
-  animation: pulse-indicator 0.8s ease-in-out infinite;
+/* 이동할 위치에 나타나는 그림자 같은 ghost */
+.env-safety-page .drag-ghost {
+  opacity: 0.75;
 }
 
-@keyframes pulse-indicator {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scaleY(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scaleY(1.5);
-  }
+/* 드래그 중 원본은 살짝 투명 + pointer-events 막음 */
+.env-safety-page .draggable-panel.is-dragging {
+  opacity: 0.2;
+  transition: none;
 }

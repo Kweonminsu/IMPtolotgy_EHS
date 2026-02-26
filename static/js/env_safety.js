@@ -522,7 +522,7 @@
         ${issues
           .map(
             (i) => `
-          <tr onclick="openDetailModal(${i.id})">
+          <tr onclick="EnvSafety.openDetailModal(${i.id})">
             <td>${i.id}</td>
             <td>${esc(i.title)}</td>
             <td>${esc(i.category)}</td>
@@ -649,7 +649,7 @@
         const d = issue.checklist.filter((c) => c.checked).length;
         const p = checkPct(issue.checklist);
         return `
-    <div class="rollup-item" onclick="openDetailModal(${issue.id})">
+    <div class="rollup-item" onclick="EnvSafety.openDetailModal(${issue.id})">
       <div class="rollup-issue-name"><span class="sev-badge sev-badge-${esc(issue.severity)}">${esc(issue.severity)}</span>&nbsp;${esc(issue.title)}</div>
       <div class="rollup-bar-row">
         <div class="progress-bar-wrap" style="flex:1"><div class="progress-bar" style="width:${p}%"></div></div>
@@ -676,7 +676,7 @@
         const items = issue.todos
           .map(
             (t) => `
-      <div class="todo-rollup-item ${t.done ? "done" : ""}" onclick="event.stopPropagation();openDetailModal(${issue.id})">
+      <div class="todo-rollup-item ${t.done ? "done" : ""}" onclick="event.stopPropagation();EnvSafety.openDetailModal(${issue.id})">
         <div class="prio-dot ${esc(t.priority)}"></div>
         <span class="todo-rollup-text">${esc(t.text)}</span>
         <span class="todo-rollup-meta">${esc(t.assignee)} · ${esc(t.due)}</span>
@@ -850,7 +850,7 @@
       .map(
         (c, idx) => `
     <li class="form-check-item">
-      <div class="custom-checkbox ${c.checked ? "checked" : ""}" onclick="toggleFormCheck(${idx})"></div>
+      <div class="custom-checkbox ${c.checked ? "checked" : ""}" onclick="EnvSafety.toggleFormCheck(${idx})"></div>
       <span class="form-item-text">${esc(c.text)}</span>
       <span class="form-item-meta">${esc(c.category)}</span>
       <button class="btn-icon danger" onclick="removeFormCheck(${idx})">${ICONS.del}</button>
@@ -876,7 +876,7 @@
       <div class="prio-dot ${esc(t.priority)}"></div>
       <span class="form-item-text">${esc(t.text)}</span>
       <span class="form-item-meta">${esc(t.assignee)} · ${esc(t.due)}</span>
-      <button class="btn-icon danger" onclick="removeFormTodo(${idx})">${ICONS.del}</button>
+      <button class="btn-icon danger" onclick="EnvSafety.removeFormTodo(${idx})">${ICONS.del}</button>
     </div>`,
       )
       .join("");
@@ -1041,7 +1041,7 @@
       .map(
         (c) => `
     <li class="detail-check-item ${c.checked ? "checked" : ""}" data-id="${c.id}">
-      <div class="custom-checkbox ${c.checked ? "checked" : ""}" onclick="handleToggleCheck(${c.id})"></div>
+      <div class="custom-checkbox ${c.checked ? "checked" : ""}" onclick="EnvSafety.handleToggleCheck(${c.id})"></div>
       <span class="detail-check-text">${esc(c.text)}</span>
       <span class="detail-check-cat">${esc(c.category)}</span>
       <div class="item-actions">
@@ -1069,7 +1069,7 @@
       .map(
         (t) => `
     <div class="detail-todo-item prio-${esc(t.priority)} ${t.done ? "done" : ""}" data-id="${t.id}">
-      <div class="custom-checkbox ${t.done ? "checked" : ""}" onclick="handleToggleTodo(${t.id})"></div>
+      <div class="custom-checkbox ${t.done ? "checked" : ""}" onclick="EnvSafety.handleToggleTodo(${t.id})"></div>
       <div class="detail-todo-info">
         <div class="detail-todo-text">${esc(t.text)}</div>
         <div class="detail-todo-meta">${esc(t.assignee)} · ${esc(t.due)} · ${esc(t.priority)}</div>
@@ -1347,9 +1347,10 @@
     };
 
     // 클론 생성 (원본과 동일하게 보이도록)
+    // 클론이 원본과 100% 동일한 외관을 유지하도록 완전 복사
+    // 역할: 움직이는 객체가 헤더, 배경, 테두리, 그림자 등 모든 스타일을 그대로 가지게 함
     cloneEl = panelEl.cloneNode(true);
-    cloneEl.classList.add("drag-clone");
-    cloneEl.classList.remove("is-dragging"); // is-dragging 클래스 제거
+    cloneEl.className = panelEl.className + " drag-clone"; // 모든 클래스 복사
     cloneEl.style.position = "fixed";
     cloneEl.style.width = rect.width + "px";
     cloneEl.style.height = rect.height + "px";
@@ -1357,12 +1358,23 @@
     cloneEl.style.top = rect.top + "px";
     cloneEl.style.pointerEvents = "none";
     cloneEl.style.zIndex = "10000";
-    document.body.appendChild(cloneEl);
+    cloneEl.style.opacity = "1";
+    cloneEl.style.boxShadow = "0 20px 60px rgba(0,0,0,0.4)";
+    cloneEl.style.border = "2px solid var(--primary-color)";
+    cloneEl.style.transform = "scale(1.03)";
 
-    // 원본은 완전히 투명하게 (is-dragging 대신)
-    panelEl.style.opacity = "0";
+    // 역할: 드래그 중 원본은 숨기고, clone만 선명하게 떠서 이동 → 아이폰 앱 이동 느낌
+    panelEl.style.opacity = "0.2";
+    panelEl.classList.add("is-dragging"); // 드래그 중임을 명확히 표시
     panelEl.style.pointerEvents = "none";
 
+    // cloneEl에 원본 스타일 완전 복사 (모든 패널 스타일 유지)
+    cloneEl.style.opacity = "0.8";
+    cloneEl.style.boxShadow = "0 12px 40px rgba(0,0,0,0.35)";
+    cloneEl.style.transform = "scale(1.04)"; // 살짝 커져서 움직이는 객체처럼 보임
+    cloneEl.style.border = "2px solid var(--primary-color)"; // 테두리 강조
+
+    document.body.appendChild(cloneEl);
     document.addEventListener("mousemove", onDragMove);
     document.addEventListener("mouseup", onDragEnd);
   }
@@ -1370,7 +1382,7 @@
   /* 드롭 위치 시각적 표시 */
   function onDragMove(e) {
     if (!dragState || !cloneEl) return;
-
+    // onDragMove 함수 첫 부분에 추가
     // 클론 위치 업데이트
     const x = e.clientX - dragState.offsetX;
     const y = e.clientY - dragState.offsetY;
@@ -1382,43 +1394,35 @@
     const container = document.getElementById("panel-canvas");
     const afterElement = getDragAfterElement(container, e.clientY);
 
-    // 기존 표시 제거
-    document.querySelectorAll(".drop-indicator").forEach((el) => el.remove());
+    // 역할: 이동할 위치에 반투명한 ghost 패널을 미리 보여줌 (그림자 같은 힌트)
+    document.querySelectorAll(".drag-ghost").forEach((el) => el.remove());
 
-    // 새 위치 표시 추가
-    const indicator = document.createElement("div");
-    indicator.className = "drop-indicator";
-    indicator.style.cssText = `
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--primary-color);
-    border-radius: 2px;
-    pointer-events: none;
-    z-index: 9999;
-    box-shadow: 0 0 8px var(--primary-color);
-  `;
+    const draggedEl = document.getElementById(dragState.panelId); // dragged 변수 정의
+
+    const ghost = document.createElement("div");
+    ghost.className = "drag-ghost";
+    ghost.style.cssText = `
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: ${draggedEl ? draggedEl.offsetHeight + "px" : "180px"};
+      background: rgba(47, 111, 237, 0.08);
+      border: 2px dashed var(--primary-color);
+      border-radius: var(--radius);
+      pointer-events: none;
+      z-index: 9998;
+      box-shadow: 0 10px 30px rgba(47, 111, 237, 0.15);
+      transition: all 0.1s ease;
+    `;
 
     if (afterElement == null) {
-      // 맨 끝에 추가
-      const lastPanel = container.querySelector(".draggable-panel:last-child");
-      if (lastPanel) {
-        const rect = lastPanel.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-        indicator.style.top = rect.bottom - containerRect.top + "px";
-        container.appendChild(indicator);
-      }
+      container.appendChild(ghost);
     } else {
-      // 특정 요소 앞에 추가
-      const rect = afterElement.getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
-      indicator.style.top = rect.top - containerRect.top - 2 + "px";
-      container.appendChild(indicator);
+      container.insertBefore(ghost, afterElement);
     }
   }
 
-  /* 원본 복원 + 인디케이터 제거 */
+  /* 원본 복원 */
   function onDragEnd(e) {
     if (!dragState) return;
 
@@ -1426,32 +1430,23 @@
       const panelEl = document.getElementById(dragState.panelId);
 
       if (panelEl) {
-        // 원본 다시 보이게
+        panelEl.classList.remove("is-dragging");
         panelEl.style.opacity = "";
         panelEl.style.pointerEvents = "";
       }
 
-      // 위치 재정렬
       reorderPanels(e);
       saveLayout();
 
-      // 클론 제거
       if (cloneEl) {
         cloneEl.remove();
         cloneEl = null;
       }
-
-      // 드롭 인디케이터 제거
-      document.querySelectorAll(".drop-indicator").forEach((el) => el.remove());
-
-      // 고스트 제거
-      const ghost = document.getElementById("drop-ghost");
-      if (ghost) {
-        ghost.classList.remove("visible");
-      }
     } finally {
       cleanupDragListeners();
       dragState = null;
+      // 새 ghost 정리
+      document.querySelectorAll(".drag-ghost").forEach((el) => el.remove());
     }
   }
 
@@ -1486,10 +1481,8 @@
   }
   // 현재 마우스 위치 아래에 있어야 할 패널 계산
   function getDragAfterElement(container, y) {
-    const draggingId = dragState ? dragState.panelId : null;
-    const elements = Array.from(
-      container.querySelectorAll(".draggable-panel"),
-    ).filter((el) => el.id !== draggingId && el.style.opacity !== "0");
+    const elements = Array.from(container.querySelectorAll(".draggable-panel")) // is-dragging 클래스로 정확히 제외 → 높이 다른 패널 많아도 이동 항상 정상 작동
+      .filter((el) => !el.classList.contains("is-dragging"));
 
     return elements.reduce(
       (closest, child) => {
