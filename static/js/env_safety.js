@@ -1333,7 +1333,7 @@
     showToast("레이아웃이 초기화되었습니다.");
   }
 
-  /* 드롭 위치 표시 + 원본 숨김 개선 */
+  /* 드래그 시작 - 클론을 완전한 하얀 빈 백지로 만듦 */
   function onDragStart(e, panelEl) {
     if (e.button !== 0) return;
     e.preventDefault();
@@ -1346,11 +1346,13 @@
       offsetY: e.clientY - rect.top,
     };
 
-    // 클론 생성 (원본과 동일하게 보이도록)
-    // 클론이 원본과 100% 동일한 외관을 유지하도록 완전 복사
-    // 역할: 움직이는 객체가 헤더, 배경, 테두리, 그림자 등 모든 스타일을 그대로 가지게 함
+    // 원본은 살짝 투명하게만 처리 (콘텐츠 그대로 유지)
+    panelEl.style.opacity = "0.2";
+    panelEl.style.pointerEvents = "none";
+
+    // 클론 생성
     cloneEl = panelEl.cloneNode(true);
-    cloneEl.className = panelEl.className + " drag-clone"; // 모든 클래스 복사
+    cloneEl.className = panelEl.className + " drag-clone";
     cloneEl.style.position = "fixed";
     cloneEl.style.width = rect.width + "px";
     cloneEl.style.height = rect.height + "px";
@@ -1358,23 +1360,41 @@
     cloneEl.style.top = rect.top + "px";
     cloneEl.style.pointerEvents = "none";
     cloneEl.style.zIndex = "10000";
-    cloneEl.style.opacity = "1";
-    cloneEl.style.boxShadow = "0 20px 60px rgba(0,0,0,0.4)";
-    cloneEl.style.border = "2px solid var(--primary-color)";
-    cloneEl.style.transform = "scale(1.03)";
+    cloneEl.style.opacity = "0.5";
+    cloneEl.style.boxShadow = "0 25px 70px rgba(0, 0, 0, 0.45)";
+    cloneEl.style.border = "3px solid var(--primary-color)";
+    cloneEl.style.borderRadius = "var(--radius)";
+    cloneEl.style.transform = "scale(1.04)";
+    cloneEl.style.background = "#ffffff"; // 강제로 순수 흰색 배경
 
-    // 역할: 드래그 중 원본은 숨기고, clone만 선명하게 떠서 이동 → 아이폰 앱 이동 느낌
-    panelEl.style.opacity = "0.2";
-    panelEl.classList.add("is-dragging"); // 드래그 중임을 명확히 표시
-    panelEl.style.pointerEvents = "none";
+    // === 핵심: 클론 내부를 완전히 백지로 만듦 ===
+    // drag-handle, block-header, dom-label, resize-handle만 남기고 나머지 모두 제거
+    const keepClasses = [
+      ".drag-handle",
+      ".block-header",
+      // ".dom-label",
+      // ".resize-handle",
+    ];
+    const allChildren = Array.from(cloneEl.children);
 
-    // cloneEl에 원본 스타일 완전 복사 (모든 패널 스타일 유지)
-    cloneEl.style.opacity = "0.8";
-    cloneEl.style.boxShadow = "0 12px 40px rgba(0,0,0,0.35)";
-    cloneEl.style.transform = "scale(1.04)"; // 살짝 커져서 움직이는 객체처럼 보임
-    cloneEl.style.border = "2px solid var(--primary-color)"; // 테두리 강조
+    allChildren.forEach((child) => {
+      const shouldKeep = keepClasses.some(
+        (cls) => child.matches(cls) || child.querySelector(cls),
+      );
+      if (!shouldKeep) {
+        child.remove();
+      }
+    });
+
+    // 혹시 남아있는 콘텐츠 영역 강제 제거
+    cloneEl
+      .querySelectorAll(
+        ".panel-loading, .issue-list, .todo-rollup, .checklist-rollup, .category-stats, .timeline, .risk-summary, #echart-risk, #issue-table-container, #dom3-content",
+      )
+      .forEach((el) => el.remove());
 
     document.body.appendChild(cloneEl);
+
     document.addEventListener("mousemove", onDragMove);
     document.addEventListener("mouseup", onDragEnd);
   }
@@ -1422,7 +1442,6 @@
     }
   }
 
-  /* 원본 복원 */
   function onDragEnd(e) {
     if (!dragState) return;
 
@@ -1430,7 +1449,6 @@
       const panelEl = document.getElementById(dragState.panelId);
 
       if (panelEl) {
-        panelEl.classList.remove("is-dragging");
         panelEl.style.opacity = "";
         panelEl.style.pointerEvents = "";
       }
@@ -1445,7 +1463,6 @@
     } finally {
       cleanupDragListeners();
       dragState = null;
-      // 새 ghost 정리
       document.querySelectorAll(".drag-ghost").forEach((el) => el.remove());
     }
   }
@@ -1481,8 +1498,7 @@
   }
   // 현재 마우스 위치 아래에 있어야 할 패널 계산
   function getDragAfterElement(container, y) {
-    const elements = Array.from(container.querySelectorAll(".draggable-panel")) // is-dragging 클래스로 정확히 제외 → 높이 다른 패널 많아도 이동 항상 정상 작동
-      .filter((el) => !el.classList.contains("is-dragging"));
+    const elements = Array.from(container.querySelectorAll(".draggable-panel"));
 
     return elements.reduce(
       (closest, child) => {

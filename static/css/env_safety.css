@@ -303,12 +303,10 @@
   position: fixed;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.88;
-  border: 2px solid var(--primary-color);
-  border-radius: var(--radius);
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.5),
-    var(--glow);
+  opacity: 0.8;
+  border: 1.5px solid var(--primary-color);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5) !important;
+  border-radius: var(--radius) !important;
   transform: rotate(1.5deg) scale(1.02);
   transition: none;
   background: var(--light-bg);
@@ -1867,4 +1865,20 @@
 /* zebra stripe */
 .env-safety-page .draggable-panel table tr:nth-child(even) {
   background: rgba(0, 0, 0, 0.015);
+}
+
+/* 클론이 완전한 빈 백지일 때 */
+.env-safety-page .drag-clone {
+  background: #ffffff !important;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* 빈 클론 내부에 살짝 테두리만 보이게 (선택사항) */
+.env-safety-page .drag-clone::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 2px dashed #e2e8f0;
+  border-radius: 6px;
+  pointer-events: none;
 }
