@@ -1333,7 +1333,7 @@
     showToast("레이아웃이 초기화되었습니다.");
   }
 
-  /* 드래그 시작 - 클론을 완전한 하얀 빈 백지로 만듦 */
+  /* 드래그 시작 - 클론만 내부 콘텐츠 삭제 + drag-handle, block-header 스타일 완전 유지 */
   function onDragStart(e, panelEl) {
     if (e.button !== 0) return;
     e.preventDefault();
@@ -1346,13 +1346,15 @@
       offsetY: e.clientY - rect.top,
     };
 
-    // 원본은 살짝 투명하게만 처리 (콘텐츠 그대로 유지)
+    // 원본은 살짝 투명하게만 처리
     panelEl.style.opacity = "0.2";
     panelEl.style.pointerEvents = "none";
 
     // 클론 생성
     cloneEl = panelEl.cloneNode(true);
     cloneEl.className = panelEl.className + " drag-clone";
+
+    // 스타일
     cloneEl.style.position = "fixed";
     cloneEl.style.width = rect.width + "px";
     cloneEl.style.height = rect.height + "px";
@@ -1360,23 +1362,16 @@
     cloneEl.style.top = rect.top + "px";
     cloneEl.style.pointerEvents = "none";
     cloneEl.style.zIndex = "10000";
-    cloneEl.style.opacity = "0.5";
-    cloneEl.style.boxShadow = "0 25px 70px rgba(0, 0, 0, 0.45)";
-    cloneEl.style.border = "3px solid var(--primary-color)";
-    cloneEl.style.borderRadius = "var(--radius)";
-    cloneEl.style.transform = "scale(1.04)";
-    cloneEl.style.background = "#ffffff"; // 강제로 순수 흰색 배경
 
-    // === 핵심: 클론 내부를 완전히 백지로 만듦 ===
-    // drag-handle, block-header, dom-label, resize-handle만 남기고 나머지 모두 제거
+    // === 핵심 1: keepClasses만 남기고 나머지 내부 콘텐츠 모두 삭제 ===
     const keepClasses = [
       ".drag-handle",
       ".block-header",
       // ".dom-label",
-      // ".resize-handle",
+      // ".resize-handle"
     ];
-    const allChildren = Array.from(cloneEl.children);
 
+    const allChildren = Array.from(cloneEl.children);
     allChildren.forEach((child) => {
       const shouldKeep = keepClasses.some(
         (cls) => child.matches(cls) || child.querySelector(cls),
@@ -1386,12 +1381,19 @@
       }
     });
 
-    // 혹시 남아있는 콘텐츠 영역 강제 제거
-    cloneEl
-      .querySelectorAll(
-        ".panel-loading, .issue-list, .todo-rollup, .checklist-rollup, .category-stats, .timeline, .risk-summary, #echart-risk, #issue-table-container, #dom3-content",
-      )
-      .forEach((el) => el.remove());
+    // === 핵심 2: keepClasses 요소들의 스타일을 원본에서 정확히 복사 ===
+    keepClasses.forEach((selector) => {
+      const originalEl = panelEl.querySelector(selector);
+      const cloneElPart = cloneEl.querySelector(selector);
+
+      if (originalEl && cloneElPart) {
+        // 모든 인라인 스타일 + computed 스타일 강제 복사
+        cloneElPart.style.cssText = originalEl.style.cssText;
+
+        // 클래스도 완전 동일하게 복사 (hover, active 등 모든 CSS 규칙 적용)
+        cloneElPart.className = originalEl.className;
+      }
+    });
 
     document.body.appendChild(cloneEl);
 
