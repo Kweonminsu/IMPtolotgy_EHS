@@ -1,0 +1,1724 @@
+/* ════════════════════════════════════════
+   환경안전 운영 페이지 - env_safety.css v3
+   드래그 가능 패널 + API 로딩 상태 포함
+════════════════════════════════════════ */
+
+:root {
+  /* 기본 컬러 구조 */
+  --primary-color: #2f6fed; /* 기본 파란 포인트 */
+  --secondary-color: #f3f6fb;
+
+  /* 배경 계층 */
+  --dark-bg: #f5f6f8; /* 전체 페이지 배경 */
+  --darker-bg: #ffffff;
+  --light-bg: #ffffff; /* 패널 기본 배경 */
+  --lighter-bg: #fafafa; /* 카드 내부 */
+
+  /* 텍스트 */
+  --light-color: #222222; /* 본문 텍스트 */
+  --gray-color: #666666;
+
+  /* 상태 색상 */
+  --danger-color: #e5484d;
+  --warning-color: #f59e0b;
+  --success-color: #16a34a;
+
+  --transition-speed: 0.2s;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --glow: none;
+
+  --primary-dim: rgba(47, 111, 237, 0.08);
+  --danger-dim: rgba(229, 72, 77, 0.08);
+  --warning-dim: rgba(245, 158, 11, 0.08);
+  --success-dim: rgba(22, 163, 74, 0.08);
+
+  --border: #e5e7eb;
+  --border2: #d1d5db;
+
+  --radius: 8px;
+  --radius-sm: 4px;
+
+  --font-main: "Noto Sans KR", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --handle-color: #999999;
+}
+
+.env-safety-page *,
+.env-safety-page *::before,
+.env-safety-page *::after {
+  box-sizing: border-box;
+}
+.env-safety-page {
+  font-family: var(--font-main);
+  color: var(--light-color);
+  background: var(--dark-bg); /* 전체 페이지 배경 */
+  user-select: none;
+}
+/* ════════════════════════════════════════
+   DOM1 : 헤더 (고정)
+════════════════════════════════════════ */
+.env-safety-page .dom1 {
+  background: linear-gradient(
+    135deg,
+    var(--light-bg) 0%,
+    var(--secondary-color) 100%
+  );
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow), var(--glow);
+  position: relative;
+  overflow: hidden;
+}
+.env-safety-page .dom1::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--primary-color),
+    var(--warning-color),
+    transparent
+  );
+}
+.env-safety-page .page-header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+}
+.env-safety-page .header-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--primary-color);
+  background: var(--primary-dim);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  padding: 2px 10px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 5px;
+}
+.env-safety-page .page-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 3px;
+}
+.env-safety-page .page-title .accent {
+  color: var(--primary-color);
+  text-shadow: var(--glow);
+}
+.env-safety-page .page-sub {
+  font-size: 0.76rem;
+  color: var(--gray-color);
+}
+.env-safety-page .header-right {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.env-safety-page .stat-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 7px 14px;
+  min-width: 60px;
+  transition: all var(--transition-speed);
+}
+.env-safety-page .stat-chip:hover {
+  border-color: var(--primary-color);
+}
+.env-safety-page .stat-chip.warn {
+  border-color: rgba(255, 94, 148, 0.35);
+  background: var(--danger-dim);
+}
+.env-safety-page .stat-chip.ok {
+  border-color: rgba(80, 250, 123, 0.35);
+  background: var(--success-dim);
+}
+.env-safety-page .stat-chip.progress-chip {
+  border-color: rgba(255, 184, 108, 0.35);
+  background: var(--warning-dim);
+}
+.env-safety-page .stat-num {
+  font-family: var(--font-mono);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-shadow: var(--glow);
+  line-height: 1;
+}
+.env-safety-page .stat-chip.warn .stat-num {
+  color: var(--danger-color);
+  text-shadow: 0 0 10px rgba(255, 94, 148, 0.5);
+}
+.env-safety-page .stat-chip.ok .stat-num {
+  color: var(--success-color);
+  text-shadow: 0 0 10px rgba(80, 250, 123, 0.5);
+}
+.env-safety-page .stat-chip.progress-chip .stat-num {
+  color: var(--warning-color);
+  text-shadow: 0 0 10px rgba(255, 184, 108, 0.4);
+}
+.env-safety-page .stat-label {
+  font-size: 9px;
+  color: var(--gray-color);
+  margin-top: 2px;
+}
+
+/* 레이아웃 초기화 버튼 */
+.env-safety-page .btn-reset-layout {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--gray-color);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 5px 11px;
+  font-family: var(--font-main);
+  font-size: 0.76rem;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+.env-safety-page .btn-reset-layout:hover {
+  border-color: var(--warning-color);
+  color: var(--warning-color);
+}
+
+/* ════════════════════════════════════════
+   패널 캔버스 (드래그 자유 배치)
+════════════════════════════════════════ */
+.env-safety-page .panel-canvas {
+  position: relative;
+  width: 100%;
+  min-height: 900px; /* 패널들이 들어갈 여유 공간 */
+}
+
+/* ════════════════════════════════════════
+   드래그 가능 패널 공통
+════════════════════════════════════════ */
+.env-safety-page .draggable-panel {
+  position: absolute;
+  background-color: var(--light-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0; /* 드래그 핸들이 상단 차지 */
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s;
+  /* 기본 크기 */
+  width: calc(50% - 10px);
+  min-width: 280px;
+  min-height: 200px;
+}
+.env-safety-page .draggable-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary-color), transparent);
+  opacity: 0.55;
+  z-index: 2;
+  pointer-events: none;
+}
+.env-safety-page .draggable-panel:hover {
+  border-color: #cbd5e1; /* 은은한 강조 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+/* 드래그 중 패널 */
+.env-safety-page .draggable-panel.is-dragging {
+  opacity: 0.35;
+  border: 2px dashed rgba(0, 240, 255, 0.4);
+  box-shadow: none;
+  transition: none;
+  cursor: grabbing;
+}
+/* 드래그 플로팅 클론 */
+.env-safety-page .drag-clone {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.88;
+  border: 2px solid var(--primary-color);
+  border-radius: var(--radius);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    var(--glow);
+  transform: rotate(1.5deg) scale(1.02);
+  transition: none;
+  background: var(--light-bg);
+  overflow: hidden;
+}
+
+/* ── 드래그 핸들 ── */
+.env-safety-page .drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 240, 255, 0.06) 0%,
+    transparent 100%
+  );
+  border-bottom: 1px solid var(--border);
+  cursor: grab;
+  color: var(--handle-color);
+  transition: all 0.2s;
+  user-select: none;
+}
+.env-safety-page .drag-handle:hover {
+  background: rgba(0, 240, 255, 0.08);
+  color: var(--primary-color);
+  border-bottom-color: rgba(0, 240, 255, 0.2);
+}
+.env-safety-page .drag-handle:active {
+  cursor: grabbing;
+}
+
+/* 패널 내부 콘텐츠 패딩 (핸들 제외) */
+.env-safety-page .draggable-panel .dom-label {
+  position: absolute;
+  top: 34px;
+  right: 10px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--gray-color);
+  background: var(--darker-bg);
+  padding: 2px 7px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  user-select: none;
+  opacity: 0.4;
+  z-index: 1;
+}
+.env-safety-page .draggable-panel .block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--border);
+  background: #f9fafb; /* 게시판 헤더 스타일 */
+}
+.env-safety-page .draggable-panel .block-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--light-color);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.env-safety-page .draggable-panel .block-title svg {
+  color: var(--primary-color);
+}
+.env-safety-page .block-hint {
+  font-size: 0.62rem;
+  color: var(--gray-color);
+  font-weight: 400;
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 1px 7px;
+  margin-left: 4px;
+}
+.env-safety-page .block-actions {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+.env-safety-page .panel-body {
+  padding: 12px 14px;
+}
+
+/* 패널 내부 스크롤 영역은 panel-body 안에서 처리 */
+.env-safety-page .draggable-panel .issue-list,
+.env-safety-page .draggable-panel .checklist-rollup,
+.env-safety-page .draggable-panel .todo-rollup,
+.env-safety-page .draggable-panel .category-stats,
+.env-safety-page .draggable-panel .timeline,
+.env-safety-page .draggable-panel .risk-summary,
+.env-safety-page .draggable-panel .overall-progress {
+  padding: 0 14px;
+}
+.env-safety-page .draggable-panel .issue-list {
+  padding-bottom: 12px;
+}
+.env-safety-page .draggable-panel .checklist-rollup {
+  padding-bottom: 12px;
+}
+.env-safety-page .draggable-panel .todo-rollup {
+  padding-bottom: 12px;
+}
+.env-safety-page .draggable-panel .category-stats {
+  padding-bottom: 12px;
+}
+.env-safety-page .draggable-panel .timeline {
+  padding-bottom: 12px;
+}
+.env-safety-page .draggable-panel .risk-summary {
+  padding-bottom: 12px;
+}
+.env-safety-page .draggable-panel .overall-progress {
+  padding-top: 10px;
+}
+
+/* ── 드롭 가이드 고스트 ── */
+.env-safety-page .drop-ghost {
+  position: absolute;
+  background: rgba(0, 240, 255, 0.05);
+  border: 2px dashed rgba(0, 240, 255, 0.3);
+  border-radius: var(--radius);
+  pointer-events: none;
+  display: none;
+  z-index: 0;
+  transition: all 0.1s;
+}
+.env-safety-page .drop-ghost.visible {
+  display: block;
+}
+
+/* ════════════════════════════════════════
+   로딩 스피너 (API 호출 중)
+════════════════════════════════════════ */
+.env-safety-page .panel-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 14px;
+  color: var(--gray-color);
+  font-size: 0.78rem;
+}
+.env-safety-page .panel-loading.hidden {
+  display: none;
+}
+
+.env-safety-page .spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ════════════════════════════════════════
+   버튼
+════════════════════════════════════════ */
+.env-safety-page .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary-color);
+  color: var(--darker-bg);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  font-family: var(--font-main);
+  font-size: 0.83rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+.env-safety-page .btn-primary:hover {
+  background: #33f4ff;
+  box-shadow: var(--glow);
+  transform: translateY(-1px);
+}
+
+.env-safety-page .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--lighter-bg);
+  color: var(--gray-color);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-family: var(--font-main);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+.env-safety-page .btn-secondary:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: var(--primary-dim);
+}
+.env-safety-page .btn-secondary.btn-sm {
+  padding: 3px 8px;
+  font-size: 0.7rem;
+}
+
+.env-safety-page .btn-ghost {
+  background: transparent;
+  color: var(--gray-color);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 6px 13px;
+  font-family: var(--font-main);
+  font-size: 0.83rem;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+.env-safety-page .btn-ghost:hover {
+  border-color: var(--light-color);
+  color: var(--light-color);
+}
+.env-safety-page .btn-ghost.btn-sm {
+  padding: 3px 8px;
+  font-size: 0.7rem;
+}
+
+.env-safety-page .btn-icon {
+  background: transparent;
+  border: none;
+  color: var(--gray-color);
+  cursor: pointer;
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-speed);
+  display: inline-flex;
+  align-items: center;
+}
+.env-safety-page .btn-icon:hover {
+  color: var(--light-color);
+}
+.env-safety-page .btn-icon.danger:hover {
+  color: var(--danger-color);
+}
+
+.env-safety-page .btn-inline-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--primary-dim);
+  color: var(--primary-color);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-family: var(--font-main);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  white-space: nowrap;
+}
+.env-safety-page .btn-inline-add:hover {
+  background: var(--primary-color);
+  color: var(--darker-bg);
+}
+
+/* ════════════════════════════════════════
+   필터 셀렉트
+════════════════════════════════════════ */
+.env-safety-page .filter-select {
+  background: var(--lighter-bg);
+  border: 1px solid var(--border2);
+  color: var(--gray-color);
+  border-radius: var(--radius-sm);
+  padding: 4px 9px;
+  font-family: var(--font-main);
+  font-size: 0.76rem;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+.env-safety-page .filter-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  color: var(--light-color);
+}
+
+/* ════════════════════════════════════════
+   이슈 목록 (DOM2 내부)
+════════════════════════════════════════ */
+.env-safety-page .issue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 3px;
+}
+.env-safety-page .issue-list::-webkit-scrollbar {
+  width: 3px;
+}
+.env-safety-page .issue-list::-webkit-scrollbar-thumb {
+  background: var(--lighter-bg);
+  border-radius: 3px;
+}
+
+.env-safety-page .issue-card {
+  background: var(--lighter-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 11px;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  cursor: pointer;
+  transition: all 0.18s;
+  position: relative;
+  animation: slideInUp 0.25s ease both;
+}
+.env-safety-page .issue-card:hover {
+  border-color: rgba(0, 240, 255, 0.3);
+  background: rgba(0, 240, 255, 0.04);
+  transform: translateX(3px);
+  box-shadow: -3px 0 0 var(--primary-color);
+}
+.env-safety-page .issue-progress-mini {
+  display: flex;
+  gap: 6px;
+  margin-top: 5px;
+}
+.env-safety-page .mini-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.62rem;
+  color: var(--gray-color);
+}
+.env-safety-page .mini-bar-wrap {
+  width: 44px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.env-safety-page .mini-bar {
+  height: 100%;
+  border-radius: 10px;
+}
+.env-safety-page .mini-bar.check-bar {
+  background: var(--success-color);
+}
+.env-safety-page .mini-bar.todo-bar {
+  background: var(--primary-color);
+}
+
+.env-safety-page .sev-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.env-safety-page .sev-낮음 {
+  background: var(--success-color);
+}
+.env-safety-page .sev-보통 {
+  background: var(--primary-color);
+}
+.env-safety-page .sev-높음 {
+  background: var(--warning-color);
+}
+.env-safety-page .sev-긴급 {
+  background: var(--danger-color);
+  box-shadow: 0 0 6px var(--danger-color);
+  animation: glow-pulse 1.2s infinite;
+}
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 4px var(--danger-color);
+  }
+  50% {
+    box-shadow:
+      0 0 14px var(--danger-color),
+      0 0 22px rgba(255, 94, 148, 0.4);
+  }
+}
+
+.env-safety-page .issue-info {
+  flex: 1;
+  min-width: 0;
+}
+.env-safety-page .issue-title-text {
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.env-safety-page .issue-meta {
+  font-size: 0.66rem;
+  color: var(--gray-color);
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.env-safety-page .issue-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.18s;
+  flex-shrink: 0;
+}
+.env-safety-page .issue-card:hover .issue-actions {
+  opacity: 1;
+}
+
+.env-safety-page .status-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 20px;
+}
+.env-safety-page .status-미결 {
+  background: var(--danger-dim);
+  color: var(--danger-color);
+  border: 1px solid rgba(255, 94, 148, 0.3);
+}
+.env-safety-page .status-진행중 {
+  background: var(--warning-dim);
+  color: var(--warning-color);
+  border: 1px solid rgba(255, 184, 108, 0.3);
+}
+.env-safety-page .status-완료 {
+  background: var(--success-dim);
+  color: var(--success-color);
+  border: 1px solid rgba(80, 250, 123, 0.3);
+}
+.env-safety-page .cat-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--primary-dim);
+  color: var(--primary-color);
+  font-weight: 600;
+  border: 1px solid rgba(0, 240, 255, 0.2);
+}
+.env-safety-page .sev-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+.env-safety-page .sev-badge-낮음 {
+  background: var(--success-dim);
+  color: var(--success-color);
+}
+.env-safety-page .sev-badge-보통 {
+  background: var(--primary-dim);
+  color: var(--primary-color);
+}
+.env-safety-page .sev-badge-높음 {
+  background: var(--warning-dim);
+  color: var(--warning-color);
+}
+.env-safety-page .sev-badge-긴급 {
+  background: var(--danger-dim);
+  color: var(--danger-color);
+  animation: glow-pulse 1.2s infinite;
+}
+
+/* ════════════════════════════════════════
+   DOM3 : 체크리스트 롤업
+════════════════════════════════════════ */
+.env-safety-page .overall-progress {
+  margin-bottom: 10px;
+}
+.env-safety-page .overall-progress-nums {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--gray-color);
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.env-safety-page .pct-badge {
+  font-weight: 700;
+  color: var(--primary-color);
+  text-shadow: var(--glow);
+}
+.env-safety-page .progress-bar-wrap {
+  flex: 1;
+  height: 5px;
+  background: var(--lighter-bg);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.env-safety-page .progress-bar {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--primary-color),
+    var(--success-color)
+  );
+  border-radius: 10px;
+  transition: width 0.6s ease;
+}
+
+.env-safety-page .checklist-rollup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.env-safety-page .checklist-rollup::-webkit-scrollbar {
+  width: 3px;
+}
+.env-safety-page .checklist-rollup::-webkit-scrollbar-thumb {
+  background: var(--lighter-bg);
+  border-radius: 3px;
+}
+.env-safety-page .rollup-item {
+  background: var(--lighter-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.env-safety-page .rollup-item:hover {
+  border-color: rgba(0, 240, 255, 0.2);
+}
+.env-safety-page .rollup-issue-name {
+  font-size: 0.76rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.env-safety-page .rollup-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.env-safety-page .rollup-bar-row .progress-bar-wrap {
+  height: 4px;
+}
+.env-safety-page .rollup-bar-row .progress-bar {
+  background: linear-gradient(
+    90deg,
+    var(--success-color),
+    var(--primary-color)
+  );
+}
+.env-safety-page .rollup-ratio {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--gray-color);
+  white-space: nowrap;
+}
+
+/* ════════════════════════════════════════
+   DOM4 : To-Do 롤업
+════════════════════════════════════════ */
+.env-safety-page .todo-rollup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.env-safety-page .todo-rollup::-webkit-scrollbar {
+  width: 3px;
+}
+.env-safety-page .todo-rollup::-webkit-scrollbar-thumb {
+  background: var(--lighter-bg);
+  border-radius: 3px;
+}
+.env-safety-page .todo-rollup-group {
+  margin-bottom: 3px;
+}
+.env-safety-page .todo-rollup-issue-name {
+  font-size: 0.7rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  margin-bottom: 3px;
+  padding: 3px 6px;
+  background: var(--primary-dim);
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--primary-color);
+}
+.env-safety-page .todo-rollup-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 7px 5px 12px;
+  border-left: 2px solid var(--border2);
+  margin-left: 3px;
+  margin-bottom: 2px;
+}
+.env-safety-page .todo-rollup-item.done {
+  opacity: 0.45;
+}
+.env-safety-page .todo-rollup-item.done .todo-rollup-text {
+  text-decoration: line-through;
+}
+.env-safety-page .todo-rollup-text {
+  font-size: 0.76rem;
+  flex: 1;
+}
+.env-safety-page .todo-rollup-meta {
+  font-size: 0.62rem;
+  color: var(--gray-color);
+}
+.env-safety-page .prio-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.env-safety-page .prio-dot.높음 {
+  background: var(--danger-color);
+}
+.env-safety-page .prio-dot.보통 {
+  background: var(--warning-color);
+}
+.env-safety-page .prio-dot.낮음 {
+  background: var(--success-color);
+}
+
+/* ════════════════════════════════════════
+   DOM5 : 카테고리 현황
+════════════════════════════════════════ */
+.env-safety-page .category-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding-top: 4px;
+}
+.env-safety-page .cat-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.env-safety-page .cat-name {
+  font-size: 0.73rem;
+  color: var(--gray-color);
+  width: 65px;
+  flex-shrink: 0;
+}
+.env-safety-page .cat-bar-wrap {
+  flex: 1;
+  height: 5px;
+  background: var(--lighter-bg);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.env-safety-page .cat-bar {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.7s ease;
+}
+.env-safety-page .cat-count {
+  font-family: var(--font-mono);
+  font-size: 0.73rem;
+  color: var(--light-color);
+  width: 18px;
+  text-align: right;
+}
+.env-safety-page .cat-color-화재 {
+  background: var(--danger-color);
+}
+.env-safety-page .cat-color-화학물질 {
+  background: #b388ff;
+}
+.env-safety-page .cat-color-추락 {
+  background: var(--warning-color);
+}
+.env-safety-page .cat-color-소음 {
+  background: var(--primary-color);
+}
+.env-safety-page .cat-color-전기 {
+  background: var(--success-color);
+}
+.env-safety-page .cat-color-기타 {
+  background: var(--gray-color);
+}
+
+/* ════════════════════════════════════════
+   DOM6 : 타임라인
+════════════════════════════════════════ */
+.env-safety-page .timeline {
+  display: flex;
+  flex-direction: column;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.env-safety-page .timeline::-webkit-scrollbar {
+  width: 3px;
+}
+.env-safety-page .timeline::-webkit-scrollbar-thumb {
+  background: var(--lighter-bg);
+  border-radius: 3px;
+}
+.env-safety-page .timeline-item {
+  display: flex;
+  gap: 11px;
+  padding: 7px 0;
+  position: relative;
+}
+.env-safety-page .timeline-item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 24px;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+}
+.env-safety-page .tl-dot {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  z-index: 1;
+}
+.env-safety-page .tl-dot.new {
+  background: var(--primary-dim);
+  border: 2px solid var(--primary-color);
+  box-shadow: var(--glow);
+}
+.env-safety-page .tl-dot.update {
+  background: var(--warning-dim);
+  border: 2px solid var(--warning-color);
+}
+.env-safety-page .tl-dot.done {
+  background: var(--success-dim);
+  border: 2px solid var(--success-color);
+}
+.env-safety-page .tl-title {
+  font-size: 0.76rem;
+  font-weight: 600;
+  margin-bottom: 1px;
+}
+.env-safety-page .tl-time {
+  font-size: 0.63rem;
+  color: var(--gray-color);
+  font-family: var(--font-mono);
+}
+
+/* ════════════════════════════════════════
+   DOM7 : 위험도 요약
+════════════════════════════════════════ */
+.env-safety-page .risk-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding-top: 4px;
+}
+.env-safety-page .risk-card {
+  background: var(--lighter-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  text-align: center;
+  transition: all 0.2s;
+}
+.env-safety-page .risk-card:hover {
+  transform: translateY(-2px);
+}
+.env-safety-page .risk-card.긴급 {
+  border-color: rgba(255, 94, 148, 0.35);
+  background: var(--danger-dim);
+}
+.env-safety-page .risk-card.높음 {
+  border-color: rgba(255, 184, 108, 0.35);
+  background: var(--warning-dim);
+}
+.env-safety-page .risk-card.보통 {
+  border-color: rgba(0, 240, 255, 0.25);
+  background: var(--primary-dim);
+}
+.env-safety-page .risk-card.낮음 {
+  border-color: rgba(80, 250, 123, 0.25);
+  background: var(--success-dim);
+}
+.env-safety-page .risk-num {
+  font-family: var(--font-mono);
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 3px;
+}
+.env-safety-page .risk-card.긴급 .risk-num {
+  color: var(--danger-color);
+  text-shadow: 0 0 10px rgba(255, 94, 148, 0.5);
+}
+.env-safety-page .risk-card.높음 .risk-num {
+  color: var(--warning-color);
+  text-shadow: 0 0 10px rgba(255, 184, 108, 0.4);
+}
+.env-safety-page .risk-card.보통 .risk-num {
+  color: var(--primary-color);
+  text-shadow: var(--glow);
+}
+.env-safety-page .risk-card.낮음 .risk-num {
+  color: var(--success-color);
+  text-shadow: 0 0 10px rgba(80, 250, 123, 0.4);
+}
+.env-safety-page .risk-label {
+  font-size: 0.68rem;
+  color: var(--gray-color);
+}
+
+/* ════════════════════════════════════════
+   모달 공통
+════════════════════════════════════════ */
+.env-safety-page .modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.18s ease;
+}
+.env-safety-page .modal {
+  background: var(--light-bg);
+  border: 1px solid rgba(0, 240, 255, 0.15);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 540px;
+  box-shadow:
+    var(--shadow),
+    0 0 40px rgba(0, 240, 255, 0.06);
+  animation: slideInUp 0.2s ease;
+  max-height: 92vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.env-safety-page .modal.modal-lg {
+  max-width: 640px;
+}
+.env-safety-page .modal.modal-xl {
+  max-width: 920px;
+}
+
+.env-safety-page .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.env-safety-page .modal-header h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.env-safety-page .modal-close {
+  background: none;
+  border: none;
+  color: var(--gray-color);
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  line-height: 1;
+}
+.env-safety-page .modal-close:hover {
+  color: var(--primary-color);
+}
+.env-safety-page .modal-body {
+  padding: 14px 18px;
+  flex: 1;
+  overflow-y: auto;
+}
+.env-safety-page .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 18px 14px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* 탭 */
+.env-safety-page .modal-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--darker-bg);
+  flex-shrink: 0;
+}
+.env-safety-page .modal-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 15px;
+  font-family: var(--font-main);
+  font-size: 0.76rem;
+  color: var(--gray-color);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.env-safety-page .modal-tab:hover {
+  color: var(--light-color);
+}
+.env-safety-page .modal-tab.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+.env-safety-page .tab-count {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  background: var(--primary-dim);
+  color: var(--primary-color);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.env-safety-page .tab-panel {
+  display: none;
+}
+.env-safety-page .tab-panel.active {
+  display: block;
+}
+.env-safety-page .tab-empty-hint {
+  text-align: center;
+  padding: 16px;
+  color: var(--gray-color);
+  font-size: 0.76rem;
+}
+.env-safety-page .tab-empty-hint.hidden {
+  display: none;
+}
+
+/* 폼 */
+.env-safety-page .form-row {
+  margin-bottom: 11px;
+}
+.env-safety-page .form-row label {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--gray-color);
+  letter-spacing: 0.8px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+.env-safety-page .form-row input,
+.env-safety-page .form-row select,
+.env-safety-page .form-row textarea {
+  width: 100%;
+  background: var(--lighter-bg);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--light-color);
+  font-family: var(--font-main);
+  font-size: 0.83rem;
+  padding: 7px 10px;
+  transition: all 0.2s;
+  outline: none;
+}
+.env-safety-page .form-row input:focus,
+.env-safety-page .form-row select:focus,
+.env-safety-page .form-row textarea:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-dim);
+}
+.env-safety-page .form-row input::placeholder {
+  color: var(--gray-color);
+}
+.env-safety-page .form-row textarea {
+  resize: vertical;
+}
+.env-safety-page .form-row select option {
+  background: var(--light-bg);
+}
+.env-safety-page .form-row.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px;
+  margin-bottom: 0;
+}
+.env-safety-page .form-row.two-col > div {
+  margin-bottom: 11px;
+}
+
+/* 인라인 추가 행 */
+.env-safety-page .inline-add-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 9px;
+  flex-wrap: wrap;
+}
+.env-safety-page .inline-add-row input,
+.env-safety-page .inline-add-row select {
+  background: var(--lighter-bg);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--light-color);
+  font-family: var(--font-main);
+  font-size: 0.78rem;
+  padding: 5px 9px;
+  outline: none;
+}
+.env-safety-page .inline-add-row input:focus,
+.env-safety-page .inline-add-row select:focus {
+  border-color: var(--primary-color);
+}
+.env-safety-page .inline-add-row input:first-child {
+  flex: 1;
+  min-width: 140px;
+}
+.env-safety-page .inline-add-row select {
+  min-width: 80px;
+}
+.env-safety-page .inline-add-row.three-col {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 0.8fr auto;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+.env-safety-page .inline-add-row input::placeholder,
+.env-safety-page .inline-add-row select option {
+  color: var(--gray-color);
+  background: var(--light-bg);
+}
+
+.env-safety-page .form-checklist {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+.env-safety-page .form-todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+.env-safety-page .form-check-item,
+.env-safety-page .form-todo-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 9px;
+  background: var(--lighter-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.env-safety-page .form-todo-item {
+  border-left: 3px solid var(--border2);
+}
+.env-safety-page .form-todo-item.prio-높음 {
+  border-left-color: var(--danger-color);
+}
+.env-safety-page .form-todo-item.prio-보통 {
+  border-left-color: var(--warning-color);
+}
+.env-safety-page .form-todo-item.prio-낮음 {
+  border-left-color: var(--success-color);
+}
+.env-safety-page .form-item-text {
+  font-size: 0.78rem;
+  flex: 1;
+}
+.env-safety-page .form-item-meta {
+  font-size: 0.62rem;
+  color: var(--gray-color);
+}
+
+/* 상세 모달 */
+.env-safety-page .detail-header {
+  background: linear-gradient(135deg, var(--light-bg), rgba(42, 42, 114, 0.4));
+  border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+}
+.env-safety-page .detail-title-area {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  flex: 1;
+}
+.env-safety-page .detail-sev-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.env-safety-page .detail-title-area h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.env-safety-page .detail-badges {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.env-safety-page .detail-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.env-safety-page .detail-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.env-safety-page .info-cell {
+  background: var(--lighter-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 11px;
+}
+.env-safety-page .info-cell-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--gray-color);
+  margin-bottom: 3px;
+}
+.env-safety-page .info-cell-value {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.env-safety-page .detail-desc-box {
+  background: var(--lighter-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 13px;
+  font-size: 0.8rem;
+  color: var(--gray-color);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.env-safety-page .detail-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px;
+}
+.env-safety-page .detail-panel {
+  background: var(--lighter-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 11px;
+  display: flex;
+  flex-direction: column;
+}
+.env-safety-page .detail-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 9px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--border);
+}
+.env-safety-page .detail-panel-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.env-safety-page .detail-panel-title svg {
+  color: var(--primary-color);
+}
+.env-safety-page .detail-progress-text {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--gray-color);
+}
+.env-safety-page .detail-progress-wrap {
+  margin-bottom: 9px;
+}
+.env-safety-page .detail-progress-wrap .progress-bar-wrap {
+  height: 4px;
+}
+
+.env-safety-page .detail-inline-add {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin-bottom: 7px;
+  flex-wrap: wrap;
+}
+.env-safety-page .detail-inline-add input,
+.env-safety-page .detail-inline-add select {
+  background: var(--dark-bg);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--light-color);
+  font-family: var(--font-main);
+  font-size: 0.76rem;
+  padding: 5px 8px;
+  outline: none;
+}
+.env-safety-page .detail-inline-add input:first-child {
+  flex: 1;
+  min-width: 100px;
+}
+.env-safety-page .detail-inline-add input:focus,
+.env-safety-page .detail-inline-add select:focus {
+  border-color: var(--primary-color);
+}
+.env-safety-page .detail-inline-add input::placeholder {
+  color: var(--gray-color);
+}
+.env-safety-page .detail-todo-add {
+  flex-wrap: wrap;
+}
+
+.env-safety-page .detail-checklist {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  max-height: 200px;
+  flex: 1;
+}
+.env-safety-page .detail-todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  max-height: 200px;
+  flex: 1;
+}
+.env-safety-page .detail-checklist::-webkit-scrollbar,
+.env-safety-page .detail-todo-list::-webkit-scrollbar {
+  width: 3px;
+}
+.env-safety-page .detail-checklist::-webkit-scrollbar-thumb,
+.env-safety-page .detail-todo-list::-webkit-scrollbar-thumb {
+  background: var(--border2);
+  border-radius: 3px;
+}
+
+.env-safety-page .detail-check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 7px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+.env-safety-page .detail-check-item:hover {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: var(--border);
+}
+.env-safety-page .detail-check-item.checked {
+  opacity: 0.5;
+}
+.env-safety-page .detail-check-item.checked .detail-check-text {
+  text-decoration: line-through;
+  color: var(--gray-color);
+}
+
+.env-safety-page .custom-checkbox {
+  width: 15px;
+  height: 15px;
+  border: 2px solid var(--border2);
+  border-radius: 3px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  background: var(--dark-bg);
+}
+.env-safety-page .custom-checkbox.checked {
+  background: var(--success-color);
+  border-color: var(--success-color);
+  box-shadow: 0 0 6px rgba(80, 250, 123, 0.4);
+}
+.env-safety-page .custom-checkbox.checked::after {
+  content: "";
+  width: 3px;
+  height: 7px;
+  border: 2px solid var(--darker-bg);
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg) translateY(-1px);
+  display: block;
+}
+.env-safety-page .detail-check-text {
+  font-size: 0.76rem;
+  flex: 1;
+}
+.env-safety-page .detail-check-cat {
+  font-size: 0.58rem;
+  color: var(--gray-color);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+.env-safety-page .detail-check-item .item-actions,
+.env-safety-page .detail-todo-item .item-actions {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.env-safety-page .detail-check-item:hover .item-actions,
+.env-safety-page .detail-todo-item:hover .item-actions {
+  opacity: 1;
+}
+
+.env-safety-page .detail-todo-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 7px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  border-left: 3px solid var(--border2);
+  transition: all 0.15s;
+}
+.env-safety-page .detail-todo-item:hover {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: var(--border);
+  border-left-width: 3px;
+}
+.env-safety-page .detail-todo-item.done {
+  opacity: 0.45;
+}
+.env-safety-page .detail-todo-item.done .detail-todo-text {
+  text-decoration: line-through;
+}
+.env-safety-page .detail-todo-item.prio-높음 {
+  border-left-color: var(--danger-color);
+}
+.env-safety-page .detail-todo-item.prio-보통 {
+  border-left-color: var(--warning-color);
+}
+.env-safety-page .detail-todo-item.prio-낮음 {
+  border-left-color: var(--success-color);
+}
+.env-safety-page .detail-todo-info {
+  flex: 1;
+  min-width: 0;
+}
+.env-safety-page .detail-todo-text {
+  font-size: 0.76rem;
+}
+.env-safety-page .detail-todo-meta {
+  font-size: 0.62rem;
+  color: var(--gray-color);
+  margin-top: 1px;
+}
+
+/* ════════════════════════════════════════
+   빈 상태 / TOAST
+════════════════════════════════════════ */
+.env-safety-page .empty-msg {
+  text-align: center;
+  padding: 18px;
+  color: var(--gray-color);
+  font-size: 0.78rem;
+}
+.env-safety-page .toast {
+  position: fixed;
+  bottom: 22px;
+  right: 22px;
+  background: var(--light-bg);
+  border: 1px solid var(--border2);
+  color: var(--light-color);
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 500;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.25s;
+  z-index: 20000;
+  pointer-events: none;
+}
+.env-safety-page .toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.env-safety-page .toast.success {
+  border-color: rgba(80, 250, 123, 0.4);
+  color: var(--success-color);
+}
+.env-safety-page .toast.error {
+  border-color: rgba(255, 94, 148, 0.4);
+  color: var(--danger-color);
+}
+
+/* ════════════════════════════════════════
+   애니메이션
+════════════════════════════════════════ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes slideInUp {
+  from {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 스크롤바 */
+.env-safety-page ::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.env-safety-page ::-webkit-scrollbar-track {
+  background: var(--darker-bg);
+}
+.env-safety-page ::-webkit-scrollbar-thumb {
+  background: var(--lighter-bg);
+  border-radius: 3px;
+}
