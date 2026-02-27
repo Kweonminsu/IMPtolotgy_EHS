@@ -83,7 +83,7 @@
        드래그 가능 패널 컨테이너
   ══════════════════════════════════════ -->
       <div class="panel-canvas" id="panel-canvas">
-        <!-- DOM2 : 이슈 목록 -->
+        <!-- DOM2 -->
         <div class="dom-block draggable-panel" id="dom2" data-panel="dom2">
           <div class="drag-handle" title="드래그하여 이동">
             <svg
@@ -105,19 +105,7 @@
           <div class="dom-label">DOM2</div>
           <div class="block-header">
             <h2 class="block-title">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-              이슈 목록
+              <span class="title-text"></span>
               <span class="block-hint">카드 클릭 → 상세보기</span>
             </h2>
             <div class="block-actions">
@@ -168,20 +156,7 @@
           <div class="dom-label">DOM3</div>
           <div class="block-header">
             <h2 class="block-title">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <polyline points="9 11 12 14 22 4" />
-                <path
-                  d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"
-                />
-              </svg>
-              전체 체크리스트 현황
+              <span class="title-text"></span>
             </h2>
           </div>
           <div class="panel-loading" id="loading-dom3">
@@ -233,18 +208,7 @@
           <div class="dom-label">DOM4</div>
           <div class="block-header">
             <h2 class="block-title">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <path d="M3 9h18M9 21V9" />
-              </svg>
-              전체 To-Do 현황
+              <span class="title-text"></span>
             </h2>
           </div>
           <div class="panel-loading" id="loading-dom4">
@@ -277,19 +241,7 @@
           <div class="dom-label">DOM5</div>
           <div class="block-header">
             <h2 class="block-title">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <line x1="18" y1="20" x2="18" y2="10" />
-                <line x1="12" y1="20" x2="12" y2="4" />
-                <line x1="6" y1="20" x2="6" y2="14" />
-              </svg>
-              카테고리별 현황
+              <span class="title-text"></span>
             </h2>
           </div>
           <div class="panel-loading" id="loading-dom5">
@@ -322,18 +274,7 @@
           <div class="dom-label">DOM6</div>
           <div class="block-header">
             <h2 class="block-title">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-              최근 활동 타임라인
+              <span class="title-text"></span>
             </h2>
           </div>
           <div class="panel-loading" id="loading-dom6">
@@ -366,19 +307,7 @@
           <div class="dom-label">DOM7</div>
           <div class="block-header">
             <h2 class="block-title">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <polygon
-                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
-                />
-              </svg>
-              위험도 요약
+              <span class="title-text"></span>
             </h2>
           </div>
           <div class="panel-loading" id="loading-dom7">
@@ -412,7 +341,9 @@
           <div class="dom-label">DOM8</div>
 
           <div class="block-header">
-            <h2 class="block-title">위험도 통계 차트</h2>
+            <h2 class="block-title">
+              <span class="title-text"></span>
+            </h2>
           </div>
 
           <div id="echart-risk" style="width: 100%; height: 300px"></div>
@@ -442,7 +373,9 @@
           <div class="dom-label">DOM9</div>
 
           <div class="block-header">
-            <h2 class="block-title">전체 이슈 목록</h2>
+            <h2 class="block-title">
+              <span class="title-text"></span>
+            </h2>
           </div>
 
           <div id="issue-table-container"></div>

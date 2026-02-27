@@ -239,9 +239,7 @@
   min-height: 200px;
   max-height: 800px;
 
-  /* 초기 크기는 JS에서 설정 */
-  width: 450px;
-  height: 400px;
+  /* 초기 크기는 JS(PANEL_CONFIG)에서 설정 - CSS에서 width/height 제거 */
 
   /* 내부 스크롤을 위한 설정 */
   overflow: hidden;

@@ -951,7 +951,6 @@
     renderAll();
   }
 
-  // ✅ 수정
   async function handleDeleteIssue(id) {
     if (
       !confirm(
@@ -1238,19 +1237,167 @@
 ══════════════════════════════════════════════ */
   const STORAGE_KEY = "env_safety_panel_layout_v1";
 
-  /* 기본 레이아웃 (col x row 기준, 각 패널 크기 포함) */
-  // 원하는 초기 배치 순서 (순서대로 왼쪽 위부터 채워짐)
-  // 역할: 페이지 처음 로드될 때 패널들이 이 순서로 배치됨
-  const DEFAULT_LAYOUT = [
-    "dom2", // 이슈 목록 (가장 왼쪽 위)
-    "dom8", // 차트
-    "dom9", // 테이블
-    "dom3", // 체크리스트
-    "dom4", // To-Do
-    "dom6", // 타임라인
-    "dom5", // 카테고리
-    "dom7", // 위험도 요약 (오른쪽 아래)
-  ];
+  /* ══════════════════════════════════════════════
+   패널 설정 통합 관리
+   ── 패널 추가/삭제/순서/크기를 여기서만 관리 ──
+   
+   설정 항목:
+   - order: 배치 순서 (숫자가 작을수록 앞에 배치)
+   - width: 초기 너비 (예: '500px', 'auto')
+   - height: 초기 높이 (예: '450px', 'auto')
+   - label: 패널 설명 (디버깅/문서화용)
+   - enabled: true/false (false면 패널 숨김, 기본값 true)
+══════════════════════════════════════════════ */
+  const PANEL_CONFIG = {
+    dom2: {
+      order: 1,
+      width: "500px",
+      height: "450px",
+      label: "이슈 목록",
+      icon: `
+      <!-- 목록 아이콘 -->
+      <svg width="16" height="16" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="8" y1="6" x2="20" y2="6"/>
+        <line x1="8" y1="12" x2="20" y2="12"/>
+        <line x1="8" y1="18" x2="20" y2="18"/>
+        <circle cx="4" cy="6" r="1.5"/>
+        <circle cx="4" cy="12" r="1.5"/>
+        <circle cx="4" cy="18" r="1.5"/>
+      </svg>
+    `,
+      enabled: true,
+    },
+
+    dom8: {
+      order: 2,
+      width: "600px",
+      height: "400px",
+      label: "위험도 통계 차트",
+      icon: `
+      <!-- 바 차트 아이콘 -->
+      <svg width="16" height="16" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="4" y1="20" x2="20" y2="20"/>
+        <rect x="6" y="10" width="3" height="8"/>
+        <rect x="11" y="6" width="3" height="12"/>
+        <rect x="16" y="13" width="3" height="5"/>
+      </svg>
+    `,
+      enabled: true,
+    },
+
+    dom9: {
+      order: 3,
+      width: "700px",
+      height: "500px",
+      label: "이슈 테이블",
+      icon: `
+      <!-- 테이블 아이콘 -->
+      <svg width="16" height="16" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="16"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+        <line x1="9" y1="4" x2="9" y2="20"/>
+        <line x1="15" y1="4" x2="15" y2="20"/>
+      </svg>
+    `,
+      enabled: true,
+    },
+
+    dom3: {
+      order: 4,
+      width: "450px",
+      height: "380px",
+      label: "체크리스트 현황",
+      icon: `
+      <!-- 체크 아이콘 -->
+      <svg width="16" height="16" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <polyline points="4 12 9 17 20 6"/>
+      </svg>
+    `,
+      enabled: true,
+    },
+
+    dom4: {
+      order: 5,
+      width: "450px",
+      height: "380px",
+      label: "To-Do 현황",
+      icon: `
+      <!-- 클립보드 아이콘 -->
+      <svg width="16" height="16" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="5" y="4" width="14" height="16" rx="2"/>
+        <line x1="9" y1="2" x2="15" y2="2"/>
+        <line x1="9" y1="8" x2="15" y2="8"/>
+        <line x1="9" y1="12" x2="15" y2="12"/>
+      </svg>
+    `,
+      enabled: true,
+    },
+
+    dom6: {
+      order: 6,
+      width: "450px",
+      height: "400px",
+      label: "활동 타임라인",
+      icon: `
+      <!-- 타임라인 아이콘 -->
+      <svg width="16" height="16" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="12" y1="4" x2="12" y2="20"/>
+        <circle cx="12" cy="7" r="2"/>
+        <circle cx="12" cy="12" r="2"/>
+        <circle cx="12" cy="17" r="2"/>
+      </svg>
+    `,
+      enabled: true,
+    },
+
+    dom5: {
+      order: 7,
+      width: "400px",
+      height: "350px",
+      label: "카테고리 통계",
+      icon: `
+      <!-- 파이 차트 아이콘 -->
+      <svg width="16" height="16" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 2 A10 10 0 0 1 22 12 L12 12 Z"/>
+      </svg>
+    `,
+      enabled: true,
+    },
+
+    dom7: {
+      order: 8,
+      width: "400px",
+      height: "300px",
+      label: "위험도 요약",
+      icon: `
+      <!-- 경고 삼각형 아이콘 -->
+      <svg width="16" height="16" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <polygon points="12 2 22 20 2 20"/>
+        <line x1="12" y1="8" x2="12" y2="14"/>
+        <circle cx="12" cy="18" r="1"/>
+      </svg>
+    `,
+      enabled: true,
+    },
+  };
+
+  // PANEL_CONFIG에서 활성화된 패널만 순서대로 추출
+  // 역할: order 기준 정렬 + enabled=true인 패널만 반환
+  function getDefaultLayout() {
+    return Object.entries(PANEL_CONFIG)
+      .filter(([id, config]) => config.enabled !== false)
+      .sort((a, b) => a[1].order - b[1].order)
+      .map(([id]) => id);
+  }
 
   let layout = [];
   let dragState = null;
@@ -1259,7 +1406,8 @@
   let lastPlaceholderPosition = null; // 마지막 placeholder 위치 (깜빡임 방지)
   let placeholderUpdateTimer = null; // throttle용 타이머
 
-  // 크기 정보도 복원
+  // 저장된 레이아웃 불러오기
+  // 역할: localStorage에서 사용자가 조정한 순서/크기 복원, 없으면 PANEL_CONFIG 기본값 사용
   function loadLayout() {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -1270,7 +1418,11 @@
         saved.length > 0 &&
         typeof saved[0] === "object"
       ) {
-        return saved;
+        // 저장된 패널 중 현재 PANEL_CONFIG에 있고 enabled=true인 것만 필터링
+        return saved.filter((item) => {
+          const config = PANEL_CONFIG[item.id];
+          return config && config.enabled !== false;
+        });
       }
 
       // 구 형식 (문자열 배열) - 호환성 유지
@@ -1279,12 +1431,21 @@
         saved.length > 0 &&
         typeof saved[0] === "string"
       ) {
-        return saved.map((id) => ({ id, width: null, height: null }));
+        return saved
+          .filter((id) => {
+            const config = PANEL_CONFIG[id];
+            return config && config.enabled !== false;
+          })
+          .map((id) => ({ id, width: null, height: null }));
       }
     } catch {}
 
-    // 기본값
-    return DEFAULT_LAYOUT.map((id) => ({ id, width: null, height: null }));
+    // 기본값: PANEL_CONFIG에서 생성
+    return getDefaultLayout().map((id) => ({
+      id,
+      width: null,
+      height: null,
+    }));
   }
 
   // DOM 실제 순서 기반으로 저장
@@ -1303,15 +1464,18 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(layout));
     } catch {}
   }
-  //  순서 + 크기 복원
+  // 레이아웃 순서 + 크기 복원
+  // 역할: layout 배열 순서대로 패널 배치 + 저장된 커스텀 크기 적용
   function applyLayout() {
     const container = document.getElementById("panel-canvas");
 
     layout.forEach((item) => {
       const id = typeof item === "string" ? item : item.id;
       const el = document.getElementById(id);
+      const config = PANEL_CONFIG[id];
 
-      if (el) {
+      // 패널이 DOM에 있고 + PANEL_CONFIG에 정의되어 있고 + enabled=true인 경우만
+      if (el && config && config.enabled !== false) {
         container.appendChild(el);
 
         // 저장된 크기 복원
@@ -1320,17 +1484,28 @@
           el.style.height = item.height;
           el.style.flex = "0 0 auto";
         }
+      } else if (el) {
+        // enabled=false인 패널은 숨김 처리
+        el.style.display = "none";
       }
     });
   }
-  /* 그리드 기반 자동 정렬 */
 
+  // 레이아웃 초기화
+  // 역할: PANEL_CONFIG 기본 설정으로 완전히 리셋 (순서, 크기, 제목 모두)
   function resetLayout() {
-    layout = DEFAULT_LAYOUT.map((id) => ({ id, width: null, height: null }));
+    // 1. localStorage 초기화 (크기 정보 제거)
+    layout = getDefaultLayout().map((id) => ({
+      id,
+      width: null,
+      height: null,
+    }));
     saveLayout();
+
+    // 2. DOM 순서 재배치
     applyLayout();
 
-    // 초기 크기 재설정
+    // 3. PANEL_CONFIG 기본 크기 + 제목 적용
     setInitialPanelSizes();
 
     showToast("레이아웃이 초기화되었습니다.");
@@ -1660,24 +1835,70 @@
     });
   }
 
-  // 콘텐츠 양에 따라 초기 높이 자동 계산 + 최대 높이만 제한
-  // 역할: renderAll() 후 각 패널의 실제 콘텐츠 높이를 측정해 자연스럽게 height 설정
+  // PANEL_CONFIG 기반 초기 크기 설정
+  // 역할: 각 패널의 width, height, title을 PANEL_CONFIG에서 읽어와 적용
   function setInitialPanelSizes() {
     document.querySelectorAll(".draggable-panel").forEach((panel) => {
-      // 너비는 최소만 유지
+      const config = PANEL_CONFIG[panel.id];
+
+      if (!config) {
+        console.warn(`패널 ${panel.id}가 PANEL_CONFIG에 정의되지 않았습니다.`);
+        return;
+      }
+
+      // 1. 패널 제목 설정 (PANEL_CONFIG의 label 사용)
+      // 역할: PANEL_CONFIG 기준으로 제목과 아이콘을 렌더링
+      const titleEl = panel.querySelector(".title-text");
+
+      if (titleEl) {
+        titleEl.innerHTML = `
+    ${config.icon || ""}
+    <span class="title-label">${config.label || ""}</span>
+  `;
+      }
+
+      // 2. 기본 스타일
       panel.style.minWidth = "300px";
-      panel.style.maxWidth = "none"; // 핵심: 최대 제한 없음
+      panel.style.maxWidth = "none";
       panel.style.flex = "0 0 auto";
 
-      // 높이는 콘텐츠에 맞춤
-      panel.style.height = "auto"; // 먼저 auto로 풀어줌
-      const headerHeight = 70; // drag-handle + block-header 대략 높이
-      const contentHeight = panel.scrollHeight;
+      // 3. PANEL_CONFIG에서 크기 적용
+      if (config.width === "auto") {
+        panel.style.width = "450px"; // auto일 경우 기본값
+      } else {
+        panel.style.width = config.width;
+      }
 
-      let newHeight = Math.max(280, contentHeight + headerHeight + 20);
-      newHeight = Math.min(newHeight, 800); // 최대 높이만 800px 제한
+      if (config.height === "auto") {
+        // 콘텐츠 기반 자동 높이
+        panel.style.height = "auto";
+        const headerHeight = 70;
+        const contentHeight = panel.scrollHeight;
+        let newHeight = Math.max(280, contentHeight + headerHeight + 20);
+        newHeight = Math.min(newHeight, 800);
+        panel.style.height = newHeight + "px";
+      } else {
+        panel.style.height = config.height;
+      }
+    });
+  }
 
-      panel.style.height = newHeight + "px";
+  // 패널 제목만 업데이트 (크기는 건드리지 않음)
+  // 역할: 각 패널 내부의 제목 텍스트를 PANEL_CONFIG.label로 갱신
+  function updatePanelTitles() {
+    document.querySelectorAll(".draggable-panel").forEach((panel) => {
+      const config = PANEL_CONFIG[panel.id];
+      if (!config) return;
+
+      // 역할: PANEL_CONFIG 기준으로 제목과 아이콘을 렌더링
+      const titleEl = panel.querySelector(".title-text");
+
+      if (titleEl) {
+        titleEl.innerHTML = `
+    ${config.icon || ""}
+    <span class="title-label">${config.label || ""}</span>
+  `;
+      }
     });
   }
 
@@ -1820,13 +2041,20 @@
     layout = loadLayout();
     applyLayout();
 
-    // 초기 크기 설정 (저장된 크기가 없는 경우)
+    // 초기 크기 설정 로직
+    // 역할: localStorage에 저장된 크기가 있으면 사용, 없으면 PANEL_CONFIG 기본값 사용
     const hasCustomSizes = layout.some(
       (item) => typeof item === "object" && item.width && item.height,
     );
 
     if (!hasCustomSizes) {
+      // localStorage에 저장된 크기가 없을 때만 PANEL_CONFIG 적용
+      console.log("localStorage에 크기 정보 없음 → PANEL_CONFIG 적용");
       setInitialPanelSizes();
+    } else {
+      // localStorage에 저장된 크기가 있으면 제목만 설정
+      console.log("localStorage에서 크기 복원 → 제목만 업데이트");
+      updatePanelTitles();
     }
 
     initDragAndDrop();
