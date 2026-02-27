@@ -303,7 +303,7 @@
   position: fixed !important;
   pointer-events: none !important;
   z-index: 10000 !important;
-  opacity: 0.8 !important;
+  /* opacity: 0.8 !important; */
   background: #ffffff !important;
   border: 3px solid var(--primary-color) !important;
   border-radius: var(--radius) !important;

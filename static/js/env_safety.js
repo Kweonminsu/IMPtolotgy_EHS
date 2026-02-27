@@ -1347,14 +1347,14 @@
     };
 
     // 원본은 살짝 투명하게만 처리
-    panelEl.style.opacity = "0.2";
+    panelEl.style.opacity = "0.7";
     panelEl.style.pointerEvents = "none";
 
-    // 클론 생성
-    cloneEl = panelEl.cloneNode(true);
-    cloneEl.className = panelEl.className + " drag-clone";
+    // 클론 생성 - 빈 패널로 만들기
+    cloneEl = document.createElement("div");
+    cloneEl.className = "drag-clone";
 
-    // 스타일
+    // 스타일 - 빈 하얀 패널
     cloneEl.style.position = "fixed";
     cloneEl.style.width = rect.width + "px";
     cloneEl.style.height = rect.height + "px";
@@ -1362,38 +1362,11 @@
     cloneEl.style.top = rect.top + "px";
     cloneEl.style.pointerEvents = "none";
     cloneEl.style.zIndex = "10000";
-
-    // === 핵심 1: keepClasses만 남기고 나머지 내부 콘텐츠 모두 삭제 ===
-    const keepClasses = [
-      ".drag-handle",
-      ".block-header",
-      // ".dom-label",
-      // ".resize-handle"
-    ];
-
-    const allChildren = Array.from(cloneEl.children);
-    allChildren.forEach((child) => {
-      const shouldKeep = keepClasses.some(
-        (cls) => child.matches(cls) || child.querySelector(cls),
-      );
-      if (!shouldKeep) {
-        child.remove();
-      }
-    });
-
-    // === 핵심 2: keepClasses 요소들의 스타일을 원본에서 정확히 복사 ===
-    keepClasses.forEach((selector) => {
-      const originalEl = panelEl.querySelector(selector);
-      const cloneElPart = cloneEl.querySelector(selector);
-
-      if (originalEl && cloneElPart) {
-        // 모든 인라인 스타일 + computed 스타일 강제 복사
-        cloneElPart.style.cssText = originalEl.style.cssText;
-
-        // 클래스도 완전 동일하게 복사 (hover, active 등 모든 CSS 규칙 적용)
-        cloneElPart.className = originalEl.className;
-      }
-    });
+    cloneEl.style.background = "#ffffff";
+    cloneEl.style.border = "2px solid var(--primary-color)";
+    cloneEl.style.borderRadius = "var(--radius)";
+    cloneEl.style.opacity = "0.8";
+    cloneEl.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.2)";
 
     document.body.appendChild(cloneEl);
 
@@ -1411,37 +1384,6 @@
 
     cloneEl.style.left = x + "px";
     cloneEl.style.top = y + "px";
-
-    // 드롭 가능 위치 표시
-    const container = document.getElementById("panel-canvas");
-    const afterElement = getDragAfterElement(container, e.clientY);
-
-    // 역할: 이동할 위치에 반투명한 ghost 패널을 미리 보여줌 (그림자 같은 힌트)
-    document.querySelectorAll(".drag-ghost").forEach((el) => el.remove());
-
-    const draggedEl = document.getElementById(dragState.panelId); // dragged 변수 정의
-
-    const ghost = document.createElement("div");
-    ghost.className = "drag-ghost";
-    ghost.style.cssText = `
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: ${draggedEl ? draggedEl.offsetHeight + "px" : "180px"};
-      background: rgba(47, 111, 237, 0.08);
-      border: 2px dashed var(--primary-color);
-      border-radius: var(--radius);
-      pointer-events: none;
-      z-index: 9998;
-      box-shadow: 0 10px 30px rgba(47, 111, 237, 0.15);
-      transition: all 0.1s ease;
-    `;
-
-    if (afterElement == null) {
-      container.appendChild(ghost);
-    } else {
-      container.insertBefore(ghost, afterElement);
-    }
   }
 
   function onDragEnd(e) {
@@ -1465,7 +1407,6 @@
     } finally {
       cleanupDragListeners();
       dragState = null;
-      document.querySelectorAll(".drag-ghost").forEach((el) => el.remove());
     }
   }
 
