@@ -245,6 +245,30 @@
 
   /* 내부 스크롤을 위한 설정 */
   overflow: hidden;
+
+  transition: transform 0.2s ease;
+}
+
+/* Placeholder 호버 효과 */
+.env-safety-page .drag-placeholder {
+  animation: pulse-border 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+  0%,
+  100% {
+    border-color: var(--primary-color);
+    background: rgba(47, 111, 237, 0.08);
+  }
+  50% {
+    border-color: rgba(47, 111, 237, 0.6);
+    background: rgba(47, 111, 237, 0.16);
+  }
+}
+
+/* Placeholder 호버 효과 */
+.env-safety-page .drag-placeholder {
+  animation: pulse-border 1.5s ease-in-out infinite;
 }
 
 /* 패널 내부 콘텐츠 영역 스크롤 */

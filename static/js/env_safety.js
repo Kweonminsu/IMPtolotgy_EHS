@@ -1255,6 +1255,9 @@
   let layout = [];
   let dragState = null;
   let cloneEl = null;
+  let placeholderEl = null; // 드롭 위치를 표시하는 placeholder
+  let lastPlaceholderPosition = null; // 마지막 placeholder 위치 (깜빡임 방지)
+  let placeholderUpdateTimer = null; // throttle용 타이머
 
   // 크기 정보도 복원
   function loadLayout() {
@@ -1346,9 +1349,9 @@
       offsetY: e.clientY - rect.top,
     };
 
-    // 원본은 살짝 투명하게만 처리
-    panelEl.style.opacity = "0.7";
-    panelEl.style.pointerEvents = "none";
+    // 원본 패널 완전히 숨기기 + DOM 흐름에서 제거
+    panelEl.style.display = "none";
+    panelEl.classList.add("is-dragging");
 
     // 클론 생성 - 빈 패널로 만들기
     cloneEl = document.createElement("div");
@@ -1370,20 +1373,82 @@
 
     document.body.appendChild(cloneEl);
 
+    // Placeholder 생성 - 드롭될 위치를 미리 보여줌
+    // 역할: 원본 패널 크기만큼 빈 공간을 만들어 다른 패널들이 자리를 비켜주게 함
+    const container = document.getElementById("panel-canvas");
+    placeholderEl = document.createElement("div");
+    placeholderEl.className = "drag-placeholder";
+    placeholderEl.style.cssText = `
+      width: ${rect.width}px;
+      height: ${rect.height}px;
+      background: rgba(47, 111, 237, 0.12);
+      border: 2px dashed var(--primary-color);
+      border-radius: var(--radius);
+      pointer-events: none;
+      box-sizing: border-box;
+      flex: 0 0 auto;
+    `;
+
+    // 원본이 있던 위치에 placeholder 삽입
+    container.insertBefore(placeholderEl, panelEl.nextSibling);
+
     document.addEventListener("mousemove", onDragMove);
     document.addEventListener("mouseup", onDragEnd);
   }
 
   /* 드롭 위치 시각적 표시 */
+  // 역할: 마우스 이동 시 clone 위치 업데이트 + placeholder를 실시간으로 이동시켜 드롭 위치 표시
   function onDragMove(e) {
     if (!dragState || !cloneEl) return;
-    // onDragMove 함수 첫 부분에 추가
-    // 클론 위치 업데이트
+
+    // 1. 클론 위치는 즉시 업데이트 (부드러운 움직임)
     const x = e.clientX - dragState.offsetX;
     const y = e.clientY - dragState.offsetY;
 
     cloneEl.style.left = x + "px";
     cloneEl.style.top = y + "px";
+
+    // 2. Placeholder 업데이트는 throttle 적용 (깜빡임 방지)
+    if (!placeholderEl) return;
+
+    // 이전 타이머 취소
+    if (placeholderUpdateTimer) {
+      return; // 이미 예약된 업데이트가 있으면 스킵
+    }
+
+    // 50ms마다 한 번씩만 placeholder 위치 업데이트
+    placeholderUpdateTimer = setTimeout(() => {
+      updatePlaceholderPosition(e.clientX, e.clientY);
+      placeholderUpdateTimer = null;
+    }, 50);
+  }
+
+  // Placeholder 위치 업데이트 (분리된 함수)
+  // 역할: 깜빡임을 줄이기 위해 위치가 실제로 변경될 때만 DOM 조작
+  function updatePlaceholderPosition(mouseX, mouseY) {
+    if (!placeholderEl) return;
+
+    const container = document.getElementById("panel-canvas");
+    const afterElement = getDragAfterElement(container, mouseX, mouseY);
+
+    // 새로운 위치 식별자 생성
+    const newPosition = afterElement ? afterElement.id : "end";
+
+    // 위치가 실제로 변경되었을 때만 DOM 조작 (깜빡임 방지)
+    if (newPosition === lastPlaceholderPosition) {
+      return;
+    }
+
+    lastPlaceholderPosition = newPosition;
+
+    // Placeholder를 적절한 위치로 이동
+    if (afterElement === null) {
+      // 맨 뒤에 배치
+      container.appendChild(placeholderEl);
+    } else if (afterElement !== placeholderEl) {
+      // afterElement 앞에 배치
+      container.insertBefore(placeholderEl, afterElement);
+    }
   }
 
   function onDragEnd(e) {
@@ -1391,19 +1456,37 @@
 
     try {
       const panelEl = document.getElementById(dragState.panelId);
+      const container = document.getElementById("panel-canvas");
 
-      if (panelEl) {
-        panelEl.style.opacity = "";
-        panelEl.style.pointerEvents = "";
+      if (panelEl && placeholderEl) {
+        // Placeholder 위치에 원본 패널 복원
+        // 역할: 드롭 시 placeholder가 있던 자리에 원본 패널을 정확히 배치
+        container.insertBefore(panelEl, placeholderEl);
+
+        // 원본 패널 스타일 복원
+        panelEl.style.display = "";
+        panelEl.classList.remove("is-dragging");
+
+        // Placeholder 제거
+        placeholderEl.remove();
+        placeholderEl = null;
       }
 
-      reorderPanels(e);
       saveLayout();
 
       if (cloneEl) {
         cloneEl.remove();
         cloneEl = null;
       }
+
+      // 타이머 정리
+      if (placeholderUpdateTimer) {
+        clearTimeout(placeholderUpdateTimer);
+        placeholderUpdateTimer = null;
+      }
+
+      // 위치 캐시 초기화
+      lastPlaceholderPosition = null;
     } finally {
       cleanupDragListeners();
       dragState = null;
@@ -1415,96 +1498,62 @@
     document.removeEventListener("mouseup", onDragEnd);
   }
 
-  // 패널 자동 정렬 - 2D 좌표 기반
-  // 역할: 마우스 X, Y 좌표를 모두 고려해 정확한 위치에 패널 삽입
-  function reorderPanels(event) {
-    const container = document.getElementById("panel-canvas");
-    const dragged = document.getElementById(dragState.panelId);
-
-    if (!dragged) return;
-
-    // X, Y 좌표 모두 전달
-    const afterElement = getDragAfterElement(
-      container,
-      event.clientX,
-      event.clientY,
-    );
-
-    // 삽입 위치 결정
-    if (afterElement === null) {
-      // 맨 뒤에 추가
-      container.appendChild(dragged);
-    } else if (afterElement !== dragged) {
-      // afterElement 앞에 삽입
-      container.insertBefore(dragged, afterElement);
-    }
-  }
-
-  // 현재 마우스 위치 아래에 있어야 할 패널 계산
-  // 2D 거리 기반으로 가장 가까운 삽입 위치 계산
-  // 역할: 마우스 커서와 각 패널의 실제 2D 거리를 측정해 정확한 드롭 위치 결정
+  // 가장 가까운 삽입 위치 계산 (개선 버전)
+  // 역할: 마우스와 가장 가까운 패널의 가장자리를 찾아 그 앞 또는 뒤에 삽입할 위치 반환
   function getDragAfterElement(container, mouseX, mouseY) {
     const elements = Array.from(
-      container.querySelectorAll(".draggable-panel:not(.is-dragging)"),
+      container.querySelectorAll(".draggable-panel"),
+    ).filter(
+      (el) => !el.classList.contains("is-dragging") && el !== placeholderEl,
     );
 
-    // 드래그 중인 패널은 제외하고 거리 계산
-    const draggingElement = document.getElementById(dragState?.panelId);
+    if (elements.length === 0) return null;
 
-    let closestElement = null;
+    let bestInsertInfo = null;
     let minDistance = Infinity;
-    let insertBefore = true;
 
     elements.forEach((element) => {
-      if (element === draggingElement) return;
-
       const rect = element.getBoundingClientRect();
 
-      // 패널을 4개 영역으로 나눔: 상단, 하단, 좌측, 우측
+      // 패널의 중심점
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
 
-      // 마우스가 패널의 어느 사분면에 있는지 판단
+      // 마우스가 패널 중심 기준 좌측인지 우측인지
       const isLeft = mouseX < centerX;
-      const isTop = mouseY < centerY;
 
-      // 각 모서리/변까지의 거리 계산
-      let insertX, insertY;
+      // 삽입 경계선 정의 (좌측 경계 또는 우측 경계)
+      const boundaryX = isLeft ? rect.left : rect.right;
+      const boundaryY = centerY;
 
-      if (isLeft && isTop) {
-        // 좌상단 - 패널 앞에 삽입
-        insertX = rect.left;
-        insertY = rect.top;
-        insertBefore = true;
-      } else if (!isLeft && isTop) {
-        // 우상단 - 패널 뒤에 삽입
-        insertX = rect.right;
-        insertY = rect.top;
-        insertBefore = false;
-      } else if (isLeft && !isTop) {
-        // 좌하단 - 패널 앞에 삽입
-        insertX = rect.left;
-        insertY = rect.bottom;
-        insertBefore = true;
-      } else {
-        // 우하단 - 패널 뒤에 삽입
-        insertX = rect.right;
-        insertY = rect.bottom;
-        insertBefore = false;
-      }
-
-      // 2D 유클리드 거리 계산
+      // 경계선까지의 거리 계산
       const distance = Math.sqrt(
-        Math.pow(mouseX - insertX, 2) + Math.pow(mouseY - insertY, 2),
+        Math.pow(mouseX - boundaryX, 2) + Math.pow(mouseY - boundaryY, 2),
       );
 
       if (distance < minDistance) {
         minDistance = distance;
-        closestElement = insertBefore ? element : null;
+        bestInsertInfo = {
+          element: element,
+          insertBefore: isLeft, // 좌측이면 element 앞에, 우측이면 뒤에
+        };
       }
     });
 
-    return closestElement;
+    if (!bestInsertInfo) return null;
+
+    // insertBefore가 false면 다음 요소를 반환 (그 앞에 삽입하는 효과)
+    if (bestInsertInfo.insertBefore) {
+      return bestInsertInfo.element;
+    } else {
+      // element 다음 요소 찾기
+      const nextSibling = bestInsertInfo.element.nextElementSibling;
+      // placeholder가 nextSibling이면 그 다음 요소
+      if (nextSibling === placeholderEl) {
+        return nextSibling.nextElementSibling;
+      }
+      return nextSibling;
+    }
   }
 
   /* 패널 이벤트 cleanup (메모리 누수 방지) */
