@@ -1415,47 +1415,96 @@
     document.removeEventListener("mouseup", onDragEnd);
   }
 
-  //  패널 자동 정렬
+  // 패널 자동 정렬 - 2D 좌표 기반
+  // 역할: 마우스 X, Y 좌표를 모두 고려해 정확한 위치에 패널 삽입
   function reorderPanels(event) {
     const container = document.getElementById("panel-canvas");
     const dragged = document.getElementById(dragState.panelId);
 
     if (!dragged) return;
 
-    const afterElement = getDragAfterElement(container, event.clientY);
+    // X, Y 좌표 모두 전달
+    const afterElement = getDragAfterElement(
+      container,
+      event.clientX,
+      event.clientY,
+    );
 
-    // 부드러운 이동 애니메이션
-    const currentIndex = Array.from(container.children).indexOf(dragged);
-    const targetIndex = afterElement
-      ? Array.from(container.children).indexOf(afterElement)
-      : container.children.length;
-
-    // 실제로 위치가 변경되는 경우에만 이동
-    if (currentIndex !== targetIndex && currentIndex !== targetIndex - 1) {
-      if (afterElement == null) {
-        container.appendChild(dragged);
-      } else {
-        container.insertBefore(dragged, afterElement);
-      }
+    // 삽입 위치 결정
+    if (afterElement === null) {
+      // 맨 뒤에 추가
+      container.appendChild(dragged);
+    } else if (afterElement !== dragged) {
+      // afterElement 앞에 삽입
+      container.insertBefore(dragged, afterElement);
     }
   }
+
   // 현재 마우스 위치 아래에 있어야 할 패널 계산
-  function getDragAfterElement(container, y) {
-    const elements = Array.from(container.querySelectorAll(".draggable-panel"));
+  // 2D 거리 기반으로 가장 가까운 삽입 위치 계산
+  // 역할: 마우스 커서와 각 패널의 실제 2D 거리를 측정해 정확한 드롭 위치 결정
+  function getDragAfterElement(container, mouseX, mouseY) {
+    const elements = Array.from(
+      container.querySelectorAll(".draggable-panel:not(.is-dragging)"),
+    );
 
-    return elements.reduce(
-      (closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
+    // 드래그 중인 패널은 제외하고 거리 계산
+    const draggingElement = document.getElementById(dragState?.panelId);
 
-        if (offset < 0 && offset > closest.offset) {
-          return { offset: offset, element: child };
-        } else {
-          return closest;
-        }
-      },
-      { offset: Number.NEGATIVE_INFINITY },
-    ).element;
+    let closestElement = null;
+    let minDistance = Infinity;
+    let insertBefore = true;
+
+    elements.forEach((element) => {
+      if (element === draggingElement) return;
+
+      const rect = element.getBoundingClientRect();
+
+      // 패널을 4개 영역으로 나눔: 상단, 하단, 좌측, 우측
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      // 마우스가 패널의 어느 사분면에 있는지 판단
+      const isLeft = mouseX < centerX;
+      const isTop = mouseY < centerY;
+
+      // 각 모서리/변까지의 거리 계산
+      let insertX, insertY;
+
+      if (isLeft && isTop) {
+        // 좌상단 - 패널 앞에 삽입
+        insertX = rect.left;
+        insertY = rect.top;
+        insertBefore = true;
+      } else if (!isLeft && isTop) {
+        // 우상단 - 패널 뒤에 삽입
+        insertX = rect.right;
+        insertY = rect.top;
+        insertBefore = false;
+      } else if (isLeft && !isTop) {
+        // 좌하단 - 패널 앞에 삽입
+        insertX = rect.left;
+        insertY = rect.bottom;
+        insertBefore = true;
+      } else {
+        // 우하단 - 패널 뒤에 삽입
+        insertX = rect.right;
+        insertY = rect.bottom;
+        insertBefore = false;
+      }
+
+      // 2D 유클리드 거리 계산
+      const distance = Math.sqrt(
+        Math.pow(mouseX - insertX, 2) + Math.pow(mouseY - insertY, 2),
+      );
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestElement = insertBefore ? element : null;
+      }
+    });
+
+    return closestElement;
   }
 
   /* 패널 이벤트 cleanup (메모리 누수 방지) */
