@@ -16,16 +16,17 @@
    ① 샘플 데이터 (서버에서 왔다고 가정)
 ══════════════════════════════════════════════ */
   const SAMPLE_ISSUES = [
+    // ── 기존 5개 (원본 그대로 유지) ──
     {
       id: 1,
       title: "A동 3층 용접 불꽃 화재 위험",
       category: "화재",
       severity: "긴급",
       status: "미결",
-      location: "A동 3층",
+      location: "A라인",
       assignee: "김철수",
       reporter: "홍길동",
-      desc: "용접 작업 중 불꽃이 인근 가연성 자재에 튀는 사고 위험 감지됨. 즉각적인 안전 조치 필요.",
+      desc: "용접 작업 중 불꽃이 인근 가연성 자재에 튀는 사고 위험 감지됨.",
       createdAt: "2025-02-20 09:15",
       checklist: [
         {
@@ -78,21 +79,21 @@
       category: "화학물질",
       severity: "높음",
       status: "진행중",
-      location: "B동 창고",
+      location: "B라인",
       assignee: "이영희",
       reporter: "최점검",
-      desc: "염산 보관함 하단부에 누액 흔적 발견. 즉시 점검 및 밀폐 조치 필요.",
+      desc: "염산 보관함 하단부에 누액 흔적 발견.",
       createdAt: "2025-02-21 11:30",
       checklist: [
         {
           id: 111,
-          text: "보호구(방독마스크, 내화학장갑) 착용",
+          text: "보호구 착용 확인",
           category: "화학물질",
           checked: true,
         },
         {
           id: 112,
-          text: "누출 구역 접근 통제 조치",
+          text: "누출 구역 접근 통제",
           category: "화학물질",
           checked: true,
         },
@@ -106,7 +107,7 @@
       todos: [
         {
           id: 211,
-          text: "화학약품 보관함 신규 교체 발주",
+          text: "화학약품 보관함 신규 교체",
           assignee: "이영희",
           due: "2025-02-27",
           priority: "높음",
@@ -128,15 +129,15 @@
       category: "추락",
       severity: "높음",
       status: "미결",
-      location: "C동 외벽",
+      location: "C라인",
       assignee: "박민준",
       reporter: "홍길동",
-      desc: "비계 작업발판 난간의 볼트 2개 누락 확인. 즉시 작업 중지 및 보수 필요.",
+      desc: "비계 작업발판 난간 볼트 2개 누락.",
       createdAt: "2025-02-21 14:00",
       checklist: [
         {
           id: 121,
-          text: "비계 구조 안전 점검 완료",
+          text: "비계 구조 안전 점검",
           category: "추락",
           checked: false,
         },
@@ -148,7 +149,7 @@
         },
         {
           id: 123,
-          text: "작업자 안전벨트 지급 및 착용 확인",
+          text: "작업자 안전벨트 착용 확인",
           category: "추락",
           checked: true,
         },
@@ -162,14 +163,6 @@
           priority: "높음",
           done: false,
         },
-        {
-          id: 222,
-          text: "비계 전수 안전 점검",
-          assignee: "김안전",
-          due: "2025-02-26",
-          priority: "높음",
-          done: false,
-        },
       ],
     },
     {
@@ -178,10 +171,10 @@
       category: "소음",
       severity: "보통",
       status: "완료",
-      location: "D동 생산라인",
+      location: "D라인",
       assignee: "최수진",
       reporter: "이관리",
-      desc: "압착기 소음 측정값 92dB, 법적 기준 90dB 초과. 청력 보호 조치 완료됨.",
+      desc: "압착기 소음 92dB, 법적 기준 초과.",
       createdAt: "2025-02-19 08:00",
       checklist: [
         {
@@ -192,7 +185,7 @@
         },
         {
           id: 132,
-          text: "귀마개 전 작업자 지급 완료",
+          text: "귀마개 전 작업자 지급",
           category: "소음",
           checked: true,
         },
@@ -214,27 +207,21 @@
       category: "화재",
       severity: "낮음",
       status: "미결",
-      location: "F동 전체",
+      location: "A라인",
       assignee: "강동원",
       reporter: "김점검",
-      desc: "F동 내 소화기 3대의 유효기간이 경과함. 교체 발주 필요.",
+      desc: "F동 내 소화기 3대 유효기간 경과.",
       createdAt: "2025-02-22 10:20",
       checklist: [
         {
           id: 141,
-          text: "만료 소화기 위치 파악 완료",
+          text: "만료 소화기 위치 파악",
           category: "화재",
           checked: true,
         },
         {
           id: 142,
-          text: "교체용 소화기 발주 완료",
-          category: "화재",
-          checked: false,
-        },
-        {
-          id: 143,
-          text: "소화기 배치도 업데이트",
+          text: "교체용 소화기 발주",
           category: "화재",
           checked: false,
         },
@@ -248,16 +235,144 @@
           priority: "보통",
           done: false,
         },
-        {
-          id: 242,
-          text: "F동 전체 소화기 전수 점검",
-          assignee: "강동원",
-          due: "2025-03-05",
-          priority: "낮음",
-          done: false,
-        },
       ],
     },
+
+    // ── 아래부터 23개 완전 랜덤 생성 (체크리스트·To-Do 모두 다양하게) ──
+    ...Array.from({ length: 23 }, (_, i) => {
+      const lines = ["A라인", "B라인", "C라인", "D라인"];
+      const cats = ["화재", "화학물질", "추락", "소음", "전기", "기타"];
+      const sevs = ["낮음", "보통", "높음", "긴급"];
+      const statuses = ["미결", "진행중", "완료"];
+
+      const cat = cats[i % 6];
+      const line = lines[i % 4];
+      const dateList = [
+        "2025-01-05",
+        "2025-01-08",
+        "2025-01-12",
+        "2025-01-15",
+        "2025-01-18",
+        "2025-01-22",
+        "2025-01-25",
+        "2025-02-03",
+        "2025-02-07",
+        "2025-02-10",
+        "2025-02-14",
+        "2025-02-17",
+        "2025-02-20",
+        "2025-02-24",
+        "2025-03-02",
+        "2025-03-05",
+        "2025-03-09",
+        "2025-03-12",
+        "2025-03-16",
+        "2025-03-19",
+        "2025-03-23",
+        "2025-03-27",
+      ];
+
+      const randomDate = dateList[Math.floor(Math.random() * dateList.length)];
+
+      // 체크리스트 랜덤 생성 (2~5개)
+      const checkPool = {
+        화재: [
+          "용접 구역 가연물 제거",
+          "소화기 압력 확인",
+          "화기작업 허가서 발급",
+          "방화문 작동 테스트",
+          "비상조명 점검",
+        ],
+        화학물질: [
+          "보호구 착용 확인",
+          "누출 감지기 작동",
+          "환기 시스템 점검",
+          "MSDS 게시",
+          "중화제 비치",
+        ],
+        추락: [
+          "안전벨트 착용",
+          "난간 고정 볼트 확인",
+          "추락 방지망 설치",
+          "작업발판 안정성 점검",
+        ],
+        소음: [
+          "소음 측정 기록",
+          "귀마개 지급",
+          "방음 패널 설치",
+          "작업자 청력 검사",
+        ],
+        전기: [
+          "접지 확인",
+          "누전차단기 테스트",
+          "전선 피복 상태 점검",
+          "배전반 청소",
+        ],
+        기타: [
+          "안전 표지판 부착",
+          "비상구 통로 확보",
+          "소방로 확보",
+          "작업자 안전교육",
+        ],
+      };
+
+      const checks = Array.from(
+        { length: 2 + Math.floor(Math.random() * 4) },
+        (_, idx) => ({
+          id: 300 + i * 10 + idx,
+          text: checkPool[cat][idx % checkPool[cat].length],
+          category: cat,
+          checked: Math.random() > 0.5,
+        }),
+      );
+
+      // To-Do 랜덤 생성 (1~4개)
+      const todoPool = {
+        화재: [
+          "화재 예방 교육 실시",
+          "소화기 교체",
+          "용접 작업 허가 프로세스 개선",
+        ],
+        화학물질: ["누출 센서 교체", "화학물질 보관 기준 강화", "MSDS 최신화"],
+        추락: ["난간 보강 공사", "안전망 추가 설치", "작업자 안전벨트 점검"],
+        소음: [
+          "방음 패널 설치",
+          "작업자 청력 보호구 지급",
+          "소음 저감 장치 검토",
+        ],
+        전기: ["배전반 점검", "접지 저항 측정", "전기 설비 정기 점검"],
+        기타: ["안전 표지판 교체", "비상구 조명 교체", "작업자 안전교육 실시"],
+      };
+
+      const todos = Array.from(
+        { length: 1 + Math.floor(Math.random() * 4) },
+        (_, idx) => ({
+          id: 400 + i * 10 + idx,
+          text: todoPool[cat][idx % todoPool[cat].length],
+          assignee: ["김철수", "이영희", "박민준", "최수진", "강동원"][
+            Math.floor(Math.random() * 5)
+          ],
+          due: `${randomDate.slice(0, 10)}`,
+          priority: ["낮음", "보통", "높음"][Math.floor(Math.random() * 3)],
+          done: Math.random() > 0.6,
+        }),
+      );
+
+      return {
+        id: 6 + i,
+        title: `${line} ${cat} 안전 이슈 #${6 + i}`,
+        category: cat,
+        severity: sevs[i % 4],
+        status: statuses[i % 3],
+        location: line,
+        assignee: ["김철수", "이영희", "박민준", "최수진", "강동원"][i % 5],
+        reporter: "홍길동",
+        desc: `자동 생성된 ${cat} 관련 안전 이슈입니다.`,
+        createdAt: `${randomDate} ${String(8 + (i % 12)).padStart(2, "0")}:00`,
+        checklist: checks,
+        todos: todos,
+      };
+    }),
   ];
 
   /* ══════════════════════════════════════════════
@@ -540,30 +655,205 @@
   }
 
   function renderRiskChart() {
-    const chartEl = document.getElementById("echart-risk");
-    if (!chartEl) return;
+    const container = document.getElementById("echart-risk");
+    if (!container) return;
 
-    const chart = echarts.init(chartEl);
+    // 상단 타입 선택 드롭다운
+    const typeSelectHTML = `
+    <div style="padding:12px 16px 8px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px;">
+      <span style="font-weight:600; color:var(--gray-color);">조회 타입:</span>
+      <select id="risk-type-select" style="padding:6px 12px; border-radius:6px; border:1px solid var(--border2);">
+        <option value="전체">전체</option>
+        <option value="화재">화재</option>
+        <option value="화학물질">화학물질</option>
+      </select>
+    </div>`;
 
-    const levels = ["긴급", "높음", "보통", "낮음"];
-    const data = levels.map((lv) => ({
-      name: lv,
-      value: issues.filter((i) => i.severity === lv).length,
-    }));
+    container.innerHTML =
+      typeSelectHTML +
+      `
+    <div style="display:flex; gap:16px; padding:16px; overflow-x:auto; height:calc(100% - 60px);">
+      <div class="risk-chart-box"><div class="chart-title">월간 전체 발생</div><div id="chart-month-total" style="height:260px;"></div></div>
+      <div class="risk-chart-box"><div class="chart-title">주간 전체 발생</div><div id="chart-week-total" style="height:260px;"></div></div>
+      <div class="risk-chart-box"><div class="chart-title">월간 라인별</div><div id="chart-month-line" style="height:260px;"></div></div>
+      <div class="risk-chart-box"><div class="chart-title">주간 라인별</div><div id="chart-week-line" style="height:260px;"></div></div>
+    </div>`;
 
-    chart.setOption({
-      tooltip: {},
-      xAxis: { type: "category", data: levels },
+    // 스타일 (한 번만 추가)
+    if (!document.getElementById("risk-chart-style")) {
+      const style = document.createElement("style");
+      style.id = "risk-chart-style";
+      style.textContent = `
+      .risk-chart-box { min-width: 340px; border:1px solid var(--border); border-radius:8px; background:var(--lighter-bg); padding:12px; }
+      .chart-title { text-align:center; font-size:0.85rem; color:var(--gray-color); margin-bottom:10px; font-weight:600; }
+    `;
+      document.head.appendChild(style);
+    }
+
+    const selectedType = document.getElementById("risk-type-select").value;
+
+    // 데이터 필터링
+    let filteredIssues = issues;
+    if (selectedType !== "전체") {
+      filteredIssues = issues.filter((i) => i.category === selectedType);
+    }
+
+    // 월/주 그룹핑
+    const monthMap = {},
+      weekMap = {};
+    filteredIssues.forEach((issue) => {
+      const d = new Date(issue.createdAt);
+      const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const weekKey = `${d.getFullYear()}-W${String(Math.ceil((d - new Date(d.getFullYear(), 0, 1)) / 86400000 / 7)).padStart(2, "0")}`;
+
+      if (!monthMap[monthKey]) monthMap[monthKey] = [];
+      if (!weekMap[weekKey]) weekMap[weekKey] = [];
+      monthMap[monthKey].push(issue);
+      weekMap[weekKey].push(issue);
+    });
+
+    const months = Object.keys(monthMap).sort();
+    const weeks = Object.keys(weekMap).sort();
+    const lines = ["A라인", "B라인", "C라인", "D라인"];
+
+    // 1. 월간 전체 발생 (Bar)
+    echarts.init(document.getElementById("chart-month-total")).setOption({
+      tooltip: { trigger: "axis" },
+      xAxis: { type: "category", data: months },
       yAxis: { type: "value" },
       series: [
         {
           type: "bar",
-          data: data.map((d) => d.value),
+          data: months.map((m) => monthMap[m]?.length || 0),
+          itemStyle: { color: "#2f6fed" },
         },
       ],
     });
-  }
 
+    // 2. 주간 전체 발생 (Bar)
+    echarts.init(document.getElementById("chart-week-total")).setOption({
+      tooltip: { trigger: "axis" },
+      xAxis: { type: "category", data: weeks },
+      yAxis: { type: "value" },
+      series: [
+        {
+          type: "bar",
+          data: weeks.map((w) => weekMap[w]?.length || 0),
+          itemStyle: { color: "#2f6fed" },
+        },
+      ],
+    });
+
+    // 3. 월간 라인별 (Stacked Bar)
+    echarts.init(document.getElementById("chart-month-line")).setOption({
+      tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
+      legend: { bottom: 0 },
+      xAxis: { type: "category", data: months },
+      yAxis: { type: "value" },
+      series: lines.map((line) => ({
+        name: line,
+        type: "bar",
+        stack: "total",
+        data: months.map(
+          (m) => monthMap[m]?.filter((i) => i.location === line).length || 0,
+        ),
+      })),
+    });
+
+    // 4. 주간 라인별 (Stacked Bar)
+    echarts.init(document.getElementById("chart-week-line")).setOption({
+      tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
+      legend: { bottom: 0 },
+      xAxis: { type: "category", data: weeks },
+      yAxis: { type: "value" },
+      series: lines.map((line) => ({
+        name: line,
+        type: "bar",
+        stack: "total",
+        data: weeks.map(
+          (w) => weekMap[w]?.filter((i) => i.location === line).length || 0,
+        ),
+      })),
+    });
+
+    // 클릭 이벤트 (모든 차트에 공통 적용)
+    const chartIds = [
+      "chart-month-total",
+      "chart-week-total",
+      "chart-month-line",
+      "chart-week-line",
+    ];
+    chartIds.forEach((id) => {
+      const chart = echarts.getInstanceByDom(document.getElementById(id));
+      if (chart) {
+        chart.off("click"); // 중복 방지
+        chart.on("click", (params) => {
+          const periodKey = params.name; // 월 또는 주 키
+          const isMonth = id.includes("month");
+          showPeriodDetailModal(periodKey, isMonth, selectedType);
+        });
+      }
+    });
+  }
+  function showPeriodDetailModal(periodKey, isMonth, typeFilter) {
+    let filtered = issues;
+    if (typeFilter !== "전체")
+      filtered = filtered.filter((i) => i.category === typeFilter);
+
+    const periodIssues = filtered.filter((issue) => {
+      const d = new Date(issue.createdAt);
+      const key = isMonth
+        ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
+        : `${d.getFullYear()}-W${String(Math.ceil((d - new Date(d.getFullYear(), 0, 1)) / 86400000 / 7)).padStart(2, "0")}`;
+      return key === periodKey;
+    });
+
+    // 간단한 테이블 모달 (기존 issue-table-container 스타일 재사용)
+    const html = `
+    <div style="padding:20px;">
+      <h3 style="margin:0 0 16px;">${periodKey} ${typeFilter === "전체" ? "" : typeFilter} 발생 이슈 (${periodIssues.length}건)</h3>
+      <table style="width:100%; border-collapse:collapse;">
+        <thead><tr style="background:#f8fafc;">
+          <th style="padding:10px; text-align:left;">ID</th>
+          <th style="padding:10px; text-align:left;">제목</th>
+          <th style="padding:10px; text-align:left;">카테고리</th>
+          <th style="padding:10px; text-align:left;">라인</th>
+          <th style="padding:10px; text-align:left;">위험도</th>
+        </tr></thead>
+        <tbody>
+          ${periodIssues
+            .map(
+              (i) => `
+            <tr onclick="EnvSafety.openDetailModal(${i.id});document.getElementById('period-modal').style.display='none'" style="cursor:pointer;">
+              <td style="padding:10px;">${i.id}</td>
+              <td style="padding:10px;">${esc(i.title)}</td>
+              <td style="padding:10px;">${esc(i.category)}</td>
+              <td style="padding:10px;">${esc(i.location)}</td>
+              <td style="padding:10px;">${esc(i.severity)}</td>
+            </tr>
+          `,
+            )
+            .join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+    // 모달 생성 (한 번만 생성)
+    let modal = document.getElementById("period-modal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "period-modal";
+      modal.style.cssText = `position:fixed; inset:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:99999;`;
+      document.body.appendChild(modal);
+    }
+    modal.innerHTML = `<div style="background:white; border-radius:12px; width:90%; max-width:1100px; max-height:85vh; overflow:auto;">${html}</div>`;
+    modal.style.display = "flex";
+
+    modal.onclick = (e) => {
+      if (e.target === modal) modal.style.display = "none";
+    };
+  }
   function renderStats() {
     document.getElementById("stat-total").textContent = issues.length;
     document.getElementById("stat-open").textContent = issues.filter(
