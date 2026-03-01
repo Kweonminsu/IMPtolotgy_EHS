@@ -61,9 +61,17 @@
               </svg>
               레이아웃 초기화
             </button>
-            <select id="panel-jump-select" class="panel-jump-select">
-              <option value="">패널 검색</option>
-            </select>
+            <!-- 패널 검색 (타이핑 추천) -->
+            <div class="panel-jump-wrapper">
+              <input
+                type="text"
+                id="panel-jump-input"
+                class="panel-jump-input"
+                placeholder="패널 검색 (이슈, 체크, To-Do, 테이블...)"
+                autocomplete="off"
+              />
+              <ul id="panel-jump-list" class="panel-jump-list"></ul>
+            </div>
             <button class="btn-primary" id="btn-open-issue-modal">
               <svg
                 width="14"

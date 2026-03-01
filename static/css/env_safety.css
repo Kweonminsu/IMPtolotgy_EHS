@@ -670,16 +670,25 @@
   gap: 6px;
   max-height: 320px;
   overflow-y: auto;
-  padding-right: 3px;
+  overflow-x: hidden;
+  padding-right: 12px;
 }
 .env-safety-page .issue-list::-webkit-scrollbar {
-  width: 3px;
-}
-.env-safety-page .issue-list::-webkit-scrollbar-thumb {
-  background: var(--lighter-bg);
-  border-radius: 3px;
+  width: 7px;
 }
 
+.env-safety-page .issue-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+}
+.env-safety-page .issue-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.6); /* 살짝 입체감 */
+}
+.env-safety-page .issue-list::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color); /* 호버 시 강조 */
+}
 .env-safety-page .issue-card {
   background: var(--lighter-bg);
   border: 1px solid var(--border);
@@ -1900,19 +1909,59 @@
 }
 
 /* 패널 빠른 이동 드롭다운 */
-.env-safety-page .panel-jump-select {
-  background: var(--lighter-bg);
-  border: 1px solid var(--border2);
-  color: var(--gray-color);
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
-  font-size: 0.78rem;
-  cursor: pointer;
-  min-width: 160px;
+.env-safety-page .panel-jump-wrapper {
+  position: relative;
+  display: inline-block;
+  min-width: 260px;
+  margin-left: 8px;
 }
 
-.env-safety-page .panel-jump-select:focus {
+.env-safety-page .panel-jump-input {
+  width: 100%;
+  background: var(--lighter-bg);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px 7px 12px;
+  font-size: 0.78rem;
+  color: var(--light-color);
+}
+
+.env-safety-page .panel-jump-input:focus {
   outline: none;
   border-color: var(--primary-color);
-  color: var(--light-color);
+  box-shadow: 0 0 0 3px var(--primary-dim);
+}
+
+.env-safety-page .panel-jump-list {
+  position: fixed !important; /* ← fixed로 변경 */
+  background: var(--light-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  max-height: 380px; /* 원하는 최대 높이 */
+  overflow-y: auto;
+  list-style: none;
+  padding: 6px 0;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+  display: none;
+  z-index: 99999 !important; /* z축 최상위 */
+  width: 260px; /* 입력창과 동일한 너비로 고정 */
+}
+
+.env-safety-page .panel-jump-list.show {
+  display: block;
+}
+
+.env-safety-page .panel-jump-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.env-safety-page .panel-jump-item:hover,
+.env-safety-page .panel-jump-item.highlight {
+  background: var(--primary-dim);
+  color: var(--primary-color);
 }

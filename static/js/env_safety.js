@@ -689,6 +689,9 @@
   }
 
   function renderCategoryStats() {
+    if (PANEL_CONFIG.dom5.enabled === false) return;
+    const el = document.getElementById("category-stats");
+    if (!el) return;
     const cats = ["화재", "화학물질", "추락", "소음", "전기", "기타"];
     const max = Math.max(
       ...cats.map((c) => issues.filter((i) => i.category === c).length),
@@ -727,6 +730,9 @@
   }
 
   function renderRiskSummary() {
+    if (PANEL_CONFIG.dom7.enabled === false) return;
+    const el = document.getElementById("risk-summary");
+    if (!el) return;
     document.getElementById("risk-summary").innerHTML = [
       "긴급",
       "높음",
@@ -1387,52 +1393,131 @@
       enabled: true,
     },
   };
-  // 패널 점프 드롭다운 초기화
-  function initPanelJumpSelect() {
-    const select = document.getElementById("panel-jump-select");
-    if (!select) return;
-    // 기본옵션
-    select.innerHTML = '<option value="">패널 검색</option>';
 
-    // order 순서대로 정렬해서 추가
-    Object.entries(PANEL_CONFIG)
-      .filter(([_, config]) => config.enabled !== false)
-      .sort((a, b) => a[1].order - b[1].order)
-      .forEach(([id, config]) => {
-        const option = document.createElement("option");
-        option.value = id;
-        option.textContent = config.label || id;
-        select.appendChild(option);
+  /* ====================== enabled: false 패널 완전 숨김 ====================== */
+  function hideDisabledPanels() {
+    Object.keys(PANEL_CONFIG).forEach((id) => {
+      const panel = document.getElementById(id);
+      if (panel) {
+        panel.style.display = PANEL_CONFIG[id].enabled !== false ? "" : "none";
+      }
+    });
+  }
+
+  // ==================== 검색 가능한 패널 빠른 이동 ====================
+  function initPanelJump() {
+    const input = document.getElementById("panel-jump-input");
+    const listEl = document.getElementById("panel-jump-list");
+    if (!input || !listEl) return;
+
+    let allPanels = [];
+
+    function renderList(filtered) {
+      listEl.innerHTML = "";
+      filtered.forEach(([id, config]) => {
+        const li = document.createElement("li");
+        li.className = "panel-jump-item";
+        li.innerHTML = `${config.icon || ""} ${config.label || id}`;
+        li.onclick = () => {
+          jumpToPanel(id);
+          input.value = "";
+          listEl.classList.remove("show");
+        };
+        listEl.appendChild(li);
+      });
+    }
+
+    function filterAndSort(query) {
+      if (!query) {
+        renderList(allPanels);
+        return;
+      }
+      const q = query.toLowerCase().trim();
+      const filtered = allPanels.filter(([id, config]) => {
+        return (
+          (config.label || "").toLowerCase().includes(q) ||
+          id.toLowerCase().includes(q)
+        );
       });
 
-    // 선택 시 스크롤 + 하이라이트
-    select.onchange = () => {
-      const id = select.value;
-      if (!id) return;
+      filtered.sort((a, b) => {
+        const la = (a[1].label || a[0]).toLowerCase();
+        const lb = (b[1].label || b[0]).toLowerCase();
+        if (la === q) return -1;
+        if (lb === q) return 1;
+        if (la.startsWith(q)) return -1;
+        if (lb.startsWith(q)) return 1;
+        return la.indexOf(q) - lb.indexOf(q);
+      });
 
+      renderList(filtered);
+    }
+
+    function updateListPosition() {
+      const rect = input.getBoundingClientRect();
+      listEl.style.top = `${rect.bottom + 6}px`; // 입력창 바로 아래
+      listEl.style.left = `${rect.left}px`;
+      listEl.style.width = `${rect.width}px`;
+    }
+
+    function jumpToPanel(id) {
       const panel = document.getElementById(id);
       if (!panel) return;
+      panel.scrollIntoView({ behavior: "smooth", block: "center" });
 
-      // 스크롤 이동 (부드럽게)
-      panel.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-
-      // 하이라이트 효과 (2초 동안)
-      panel.style.transition = "all 0.3s";
-      panel.style.boxShadow = "0 0 0 4px rgba(47, 111, 237, 0.6)";
-      panel.style.transform = "scale(1.02)";
-
+      panel.style.transition = "all 0.25s";
+      panel.style.boxShadow = "0 0 0 6px rgba(47, 111, 237, 0.65)";
+      panel.style.transform = "scale(1.035)";
       setTimeout(() => {
         panel.style.boxShadow = "";
         panel.style.transform = "";
-      }, 2000);
+      }, 1600);
+    }
 
-      // 드롭다운 초기화
-      select.value = "";
-    };
+    // 패널 목록 생성
+    allPanels = Object.entries(PANEL_CONFIG)
+      .filter(([_, c]) => c.enabled !== false)
+      .sort((a, b) => a[1].order - b[1].order);
+
+    renderList(allPanels);
+
+    // 입력 이벤트
+    input.addEventListener("input", () => {
+      filterAndSort(input.value);
+      listEl.classList.add("show");
+      updateListPosition();
+    });
+
+    input.addEventListener("focus", () => {
+      filterAndSort(input.value);
+      listEl.classList.add("show");
+      updateListPosition();
+    });
+
+    // 창 크기 변경 or 스크롤 시 위치 재계산
+    window.addEventListener("resize", updateListPosition);
+    window.addEventListener("scroll", updateListPosition);
+
+    // 바깥 클릭 시 닫기
+    document.addEventListener("click", (e) => {
+      if (!input.contains(e.target) && !listEl.contains(e.target)) {
+        listEl.classList.remove("show");
+      }
+    });
+
+    // 키보드
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && listEl.children.length > 0) {
+        listEl.children[0].click();
+        e.preventDefault();
+      }
+      if (e.key === "Escape") {
+        listEl.classList.remove("show");
+        input.blur();
+      }
+    });
   }
+
   // PANEL_CONFIG에서 활성화된 패널만 순서대로 추출
   // 역할: order 기준 정렬 + enabled=true인 패널만 반환
   function getDefaultLayout() {
@@ -1533,25 +1618,27 @@
       }
     });
   }
+  /* ====================== 패널 초기화 공통 함수 ====================== */
+  function initializePanels() {
+    applyLayout(); // 순서 + 저장된 크기 복원
+    hideDisabledPanels(); // enabled: false 패널 완전 숨김
+    initPanelJump(); // 검색 가능한 입력창 버전
 
-  // 레이아웃 초기화
-  // 역할: PANEL_CONFIG 기본 설정으로 완전히 리셋 (순서, 크기, 제목 모두)
-  function resetLayout() {
-    // 1. localStorage 초기화 (크기 정보 제거)
-    layout = getDefaultLayout().map((id) => ({
-      id,
-      width: null,
-      height: null,
-    }));
-    saveLayout();
+    initDragAndDrop();
+    initResize();
 
-    // 2. DOM 순서 재배치
-    applyLayout();
+    // 크기/제목 처리
+    const hasCustomSizes = layout.some(
+      (item) => typeof item === "object" && item.width && item.height,
+    );
 
-    // 3. PANEL_CONFIG 기본 크기 + 제목 적용
-    setInitialPanelSizes();
-    initPanelJumpSelect();
-    showToast("레이아웃이 초기화되었습니다.");
+    if (!hasCustomSizes) {
+      console.log("localStorage에 크기 정보 없음 → PANEL_CONFIG 적용");
+      setInitialPanelSizes();
+    } else {
+      console.log("localStorage에서 크기 복원 → 제목만 업데이트");
+      updatePanelTitles();
+    }
   }
 
   /* 드래그 시작 - 클론만 내부 콘텐츠 삭제 + drag-handle, block-header 스타일 완전 유지 */
@@ -2077,32 +2164,31 @@
   /* ══════════════════════════════════════════════
    ⑫ 초기화
 ══════════════════════════════════════════════ */
+  // 레이아웃 초기화
+  // 역할: PANEL_CONFIG 기본 설정으로 완전히 리셋 (순서, 크기, 제목 모두)
+  function resetLayout() {
+    // 1. localStorage 완전 초기화
+    layout = getDefaultLayout().map((id) => ({
+      id,
+      width: null,
+      height: null,
+    }));
+    saveLayout();
+
+    // 2. 모든 초기화 한 번에 실행
+    initializePanels();
+
+    showToast("레이아웃이 초기화되었습니다.");
+  }
+
   //  초기 크기 설정 추가
   document.addEventListener("DOMContentLoaded", async () => {
     bindEvents();
 
-    layout = loadLayout();
-    applyLayout();
+    layout = loadLayout(); // 먼저 layout 불러오기
 
-    // 초기 크기 설정 로직
-    // 역할: localStorage에 저장된 크기가 있으면 사용, 없으면 PANEL_CONFIG 기본값 사용
-    const hasCustomSizes = layout.some(
-      (item) => typeof item === "object" && item.width && item.height,
-    );
+    initializePanels(); // ← 모든 초기화 한 번에
 
-    if (!hasCustomSizes) {
-      // localStorage에 저장된 크기가 없을 때만 PANEL_CONFIG 적용
-      console.log("localStorage에 크기 정보 없음 → PANEL_CONFIG 적용");
-      setInitialPanelSizes();
-    } else {
-      // localStorage에 저장된 크기가 있으면 제목만 설정
-      console.log("localStorage에서 크기 복원 → 제목만 업데이트");
-      updatePanelTitles();
-    }
-
-    initDragAndDrop();
-    initResize();
-    initPanelJumpSelect();
     await loadAllData();
 
     setTimeout(renderCategoryStats, 150);
