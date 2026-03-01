@@ -671,24 +671,9 @@
   max-height: 320px;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-right: 12px;
-}
-.env-safety-page .issue-list::-webkit-scrollbar {
-  width: 7px;
+  padding-right: 10px;
 }
 
-.env-safety-page .issue-list::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.06);
-  border-radius: 10px;
-}
-.env-safety-page .issue-list::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.28);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.6); /* 살짝 입체감 */
-}
-.env-safety-page .issue-list::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-color); /* 호버 시 강조 */
-}
 .env-safety-page .issue-card {
   background: var(--lighter-bg);
   border: 1px solid var(--border);
@@ -904,13 +889,7 @@
   overflow-y: auto;
   padding-right: 2px;
 }
-.env-safety-page .checklist-rollup::-webkit-scrollbar {
-  width: 3px;
-}
-.env-safety-page .checklist-rollup::-webkit-scrollbar-thumb {
-  background: var(--lighter-bg);
-  border-radius: 3px;
-}
+
 .env-safety-page .rollup-item {
   background: var(--lighter-bg);
   border: 1px solid var(--border);
@@ -963,13 +942,7 @@
   overflow-y: auto;
   padding-right: 2px;
 }
-.env-safety-page .todo-rollup::-webkit-scrollbar {
-  width: 3px;
-}
-.env-safety-page .todo-rollup::-webkit-scrollbar-thumb {
-  background: var(--lighter-bg);
-  border-radius: 3px;
-}
+
 .env-safety-page .todo-rollup-group {
   margin-bottom: 3px;
 }
@@ -1090,13 +1063,7 @@
   overflow-y: auto;
   padding-right: 2px;
 }
-.env-safety-page .timeline::-webkit-scrollbar {
-  width: 3px;
-}
-.env-safety-page .timeline::-webkit-scrollbar-thumb {
-  background: var(--lighter-bg);
-  border-radius: 3px;
-}
+
 .env-safety-page .timeline-item {
   display: flex;
   gap: 11px;
@@ -1642,15 +1609,6 @@
   overflow-y: auto;
   max-height: 200px;
   flex: 1;
-}
-.env-safety-page .detail-checklist::-webkit-scrollbar,
-.env-safety-page .detail-todo-list::-webkit-scrollbar {
-  width: 3px;
-}
-.env-safety-page .detail-checklist::-webkit-scrollbar-thumb,
-.env-safety-page .detail-todo-list::-webkit-scrollbar-thumb {
-  background: var(--border2);
-  border-radius: 3px;
 }
 
 .env-safety-page .detail-check-item {

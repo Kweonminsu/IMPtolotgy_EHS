@@ -1256,8 +1256,8 @@
   const PANEL_CONFIG = {
     dom2: {
       order: 3,
-      width: "500px",
-      height: "450px",
+      width: "490px",
+      height: "490px",
       label: "이슈 목록",
       icon: `
       <!-- 목록 아이콘 -->
@@ -1276,9 +1276,9 @@
 
     dom8: {
       order: 4,
-      width: "600px",
-      height: "400px",
-      label: "위험도 통계 차트",
+      width: "760px",
+      height: "680px",
+      label: "작업 통계",
       icon: `
       <!-- 바 차트 아이콘 -->
       <svg width="16" height="16" viewBox="0 0 24 24"
@@ -1294,8 +1294,8 @@
 
     dom3: {
       order: 2,
-      width: "450px",
-      height: "380px",
+      width: "490px",
+      height: "490px",
       label: "체크리스트 현황",
       icon: `
       <!-- 체크 아이콘 -->
@@ -1309,8 +1309,8 @@
 
     dom4: {
       order: 1,
-      width: "450px",
-      height: "380px",
+      width: "490px",
+      height: "490px",
       label: "To-Do 현황",
       icon: `
       <!-- 클립보드 아이콘 -->
