@@ -1177,39 +1177,55 @@
 /* ════════════════════════════════════════
    모달 공통
 ════════════════════════════════════════ */
-.env-safety-page .modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(5px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  animation: fadeIn 0.18s ease;
-}
-.env-safety-page .modal {
-  background: var(--light-bg);
-  border: 1px solid rgba(0, 240, 255, 0.15);
-  border-radius: var(--radius);
-  width: 100%;
-  max-width: 540px;
-  box-shadow:
-    var(--shadow),
-    0 0 40px rgba(0, 240, 255, 0.06);
-  animation: slideInUp 0.2s ease;
-  max-height: 92vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-.env-safety-page .modal.modal-lg {
-  max-width: 640px;
-}
-.env-safety-page .modal.modal-xl {
-  max-width: 920px;
+.env-safety-page .modal-overlay,
+#period-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.78) !important;
+  backdrop-filter: blur(8px) !important;
+  display: none !important; /* ← 처음엔 무조건 숨김 */
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 999999 !important;
+  overflow: hidden !important;
 }
 
+/* JS에서 display:flex를 주면 보이게 (inline style 우선) */
+.env-safety-page .modal-overlay[style*="flex"],
+#period-modal[style*="flex"] {
+  display: flex !important;
+}
+
+.env-safety-page .modal {
+  position: relative !important;
+  background: var(--light-bg) !important;
+  border: 1px solid rgba(0, 240, 255, 0.2) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7) !important;
+  animation: slideInUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+  max-height: 94vh !important;
+  width: 96% !important;
+  max-width: 920px !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  z-index: 1000000 !important;
+}
+
+/* 크기별 조정 */
+.env-safety-page .modal.modal-lg {
+  max-width: 640px !important;
+}
+.env-safety-page .modal.modal-xl {
+  max-width: 920px !important;
+}
+#period-modal .modal-xl {
+  max-width: 1180px !important;
+}
+
+/* 모달 내부 공통 요소 */
 .env-safety-page .modal-header {
   display: flex;
   justify-content: space-between;
@@ -1218,27 +1234,35 @@
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
+
 .env-safety-page .modal-header h3 {
   font-size: 0.95rem;
   font-weight: 700;
+  margin: 0;
 }
+
 .env-safety-page .modal-close {
   background: none;
   border: none;
   color: var(--gray-color);
-  font-size: 1.4rem;
+  font-size: 1.55rem;
   cursor: pointer;
-  transition: color 0.2s;
   line-height: 1;
+  padding: 4px 8px;
+  border-radius: 4px;
 }
+
 .env-safety-page .modal-close:hover {
   color: var(--primary-color);
+  background: rgba(0, 240, 255, 0.08);
 }
+
 .env-safety-page .modal-body {
   padding: 14px 18px;
   flex: 1;
   overflow-y: auto;
 }
+
 .env-safety-page .modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -1922,4 +1946,45 @@
 .env-safety-page .panel-jump-item.highlight {
   background: var(--primary-dim);
   color: var(--primary-color);
+}
+
+/* 테이블 스타일이 period-modal 안에서도 예쁘게 나오도록 */
+#period-modal table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#period-modal table th,
+#period-modal table td {
+  padding: 14px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+#period-modal table th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: var(--gray-color);
+  font-size: 0.78rem;
+}
+
+#period-modal table tr:hover {
+  background: var(--primary-dim);
+}
+
+#period-modal .modal-xl {
+  max-width: 1150px;
+}
+
+#period-modal table tr:hover {
+  background: var(--primary-dim) !important;
+}
+
+/* period-modal 전용 보강 */
+#period-modal {
+  z-index: 99999 !important;
+}
+
+#period-modal .modal-xl {
+  max-width: 1180px;
 }

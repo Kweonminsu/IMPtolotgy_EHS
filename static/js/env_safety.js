@@ -654,22 +654,20 @@
   `;
   }
 
-  let currentTypes = ["전체"]; // 기본은 전체
+  /* ==================== 작업 통계 그래프 ==================== */
+  let currentTypes = ["전체"];
 
   function renderRiskChart() {
     const container = document.getElementById("echart-risk");
     if (!container) return;
 
-    // 상단 타입 선택 체크박스
     let html = `
     <div style="padding:12px 20px 10px; border-bottom:1px solid var(--border); background:var(--lighter-bg);">
       <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; font-size:0.85rem;">
         <span style="font-weight:600; color:var(--gray-color);">조회 타입:</span>
-        
         <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
           <input type="checkbox" value="전체" ${currentTypes.includes("전체") ? "checked" : ""} onchange="toggleRiskType(this)"> 전체
         </label>
-        
         ${["화재", "화학물질", "추락", "소음", "전기", "기타"]
           .map(
             (cat) => `
@@ -681,47 +679,72 @@
           .join("")}
       </div>
     </div>
-
-    <div id="risk-charts-container" style="padding:16px; display:flex; flex-direction:column; gap:24px; overflow-y:auto; height:calc(100% - 68px);">
-      <!-- 타입별 4x1 가로 블록이 세로로 쌓임 -->
+    <div id="risk-charts-container" style="padding:16px; overflow-y:auto; overflow-x:hidden; transition:height 0.4s ease;">
     </div>
   `;
 
     container.innerHTML = html;
     const containerEl = document.getElementById("risk-charts-container");
 
+    const numTypes = currentTypes.length;
+    const HEIGHT_PER_BLOCK = 395; // 실제 측정된 한 블록 높이 (4개 차트)
+    const MAX_VISIBLE = 3;
+
+    const targetHeight =
+      HEIGHT_PER_BLOCK * Math.min(numTypes, MAX_VISIBLE) + 30;
+
+    // 내부 컨테이너 높이
+    containerEl.style.height = targetHeight + "px";
+
+    // 전체 echart-risk 높이
+    container.style.height = targetHeight + 95 + "px";
+
+    // dom8 패널 자체를 콘텐츠에 맞춰 자동 확장
+    const panel8 = document.getElementById("dom8");
+    if (panel8) {
+      panel8.style.height = "auto";
+      panel8.style.minHeight = targetHeight + 280 + "px"; // 헤더+여백 포함
+    }
+
+    // 블록 생성
     currentTypes.forEach((type) => {
       const block = document.createElement("div");
-      block.style = `border:1px solid var(--border); border-radius:10px; background:var(--lighter-bg); padding:16px;`;
-
+      block.style = `border:1px solid var(--border); border-radius:10px; background:var(--lighter-bg); padding:16px; margin-bottom:24px;`;
       block.innerHTML = `
       <div style="text-align:center; font-size:0.92rem; font-weight:600; margin-bottom:16px; color:var(--light-color);">
         ${type === "전체" ? "전체 발생 추이" : type + " 발생 추이"}
       </div>
       <div style="display:flex; gap:16px; overflow-x:auto; padding-bottom:8px;">
-        <div style="min-width:340px;">
-          <div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:8px;">월간 발생 횟수</div>
-          <div id="chart-${type}-month-total" style="height:245px;"></div>
-        </div>
-        <div style="min-width:340px;">
-          <div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:8px;">주간 발생 횟수</div>
-          <div id="chart-${type}-week-total" style="height:245px;"></div>
-        </div>
-        <div style="min-width:340px;">
-          <div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:8px;">월간 라인별</div>
-          <div id="chart-${type}-month-line" style="height:245px;"></div>
-        </div>
-        <div style="min-width:340px;">
-          <div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:8px;">주간 라인별</div>
-          <div id="chart-${type}-week-line" style="height:245px;"></div>
-        </div>
+        <div style="min-width:340px;"><div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:8px;">월간 발생 횟수</div><div id="chart-${type}-month-total" style="height:245px;"></div></div>
+        <div style="min-width:340px;"><div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:8px;">주간 발생 횟수</div><div id="chart-${type}-week-total" style="height:245px;"></div></div>
+        <div style="min-width:340px;"><div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:8px;">월간 라인별</div><div id="chart-${type}-month-line" style="height:245px;"></div></div>
+        <div style="min-width:340px;"><div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:8px;">주간 라인별</div><div id="chart-${type}-week-line" style="height:245px;"></div></div>
       </div>
     `;
       containerEl.appendChild(block);
-
       renderFourCharts(type);
     });
+
+    containerEl.style.overflowY = numTypes > MAX_VISIBLE ? "auto" : "hidden";
   }
+
+  window.toggleRiskType = function (checkbox) {
+    const type = checkbox.value;
+    if (type === "전체") {
+      currentTypes = checkbox.checked
+        ? ["전체"]
+        : currentTypes.filter((t) => t !== "전체");
+    } else {
+      if (checkbox.checked) {
+        currentTypes = currentTypes.filter((t) => t !== "전체");
+        if (!currentTypes.includes(type)) currentTypes.push(type);
+      } else {
+        currentTypes = currentTypes.filter((t) => t !== type);
+      }
+    }
+    if (currentTypes.length === 0) currentTypes = ["전체"];
+    renderRiskChart();
+  };
 
   // 타입 체크박스 토글
   window.toggleRiskType = function (checkbox) {
@@ -864,60 +887,75 @@
     });
 
     const modalHTML = `
-    <div style="padding:24px; max-width:1100px; width:95%;">
-      <h3 style="margin:0 0 20px; font-size:1.1rem;">
-        ${periodKey} ${typeFilter === "전체" ? "" : `(${typeFilter})`} 발생 이슈 
-        <span style="color:#2f6fed;">(${periodIssues.length}건)</span>
-      </h3>
-      
-      <table style="width:100%; border-collapse:collapse; background:white; border:1px solid var(--border);">
-        <thead>
-          <tr style="background:#f8fafc;">
-            <th style="padding:12px; text-align:left; border-bottom:1px solid var(--border);">ID</th>
-            <th style="padding:12px; text-align:left; border-bottom:1px solid var(--border);">제목</th>
-            <th style="padding:12px; text-align:left; border-bottom:1px solid var(--border);">카테고리</th>
-            <th style="padding:12px; text-align:left; border-bottom:1px solid var(--border);">라인</th>
-            <th style="padding:12px; text-align:left; border-bottom:1px solid var(--border);">위험도</th>
-            <th style="padding:12px; text-align:left; border-bottom:1px solid var(--border);">등록일</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${periodIssues
-            .map(
-              (i) => `
-            <tr onclick="EnvSafety.openDetailModal(${i.id}); document.getElementById('period-modal').style.display='none'" 
-                style="cursor:pointer; transition:background 0.2s;">
-              <td style="padding:12px; border-bottom:1px solid var(--border);">${i.id}</td>
-              <td style="padding:12px; border-bottom:1px solid var(--border);">${esc(i.title)}</td>
-              <td style="padding:12px; border-bottom:1px solid var(--border);">${esc(i.category)}</td>
-              <td style="padding:12px; border-bottom:1px solid var(--border);">${esc(i.location)}</td>
-              <td style="padding:12px; border-bottom:1px solid var(--border);">${esc(i.severity)}</td>
-              <td style="padding:12px; border-bottom:1px solid var(--border);">${esc(i.createdAt)}</td>
+    <div class="modal modal-xl" style="max-width:1180px;">
+      <div class="modal-header">
+        <h3>
+          ${periodKey} ${typeFilter === "전체" ? "" : `(${typeFilter})`} 발생 이슈 
+          <span style="color:#2f6fed;">(${periodIssues.length}건)</span>
+        </h3>
+        <button class="modal-close" onclick="closePeriodModal()">×</button>
+      </div>
+      <div class="modal-body" style="padding:0;">
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="background:#f8fafc;">
+              <th style="padding:14px 12px; text-align:left; border-bottom:1px solid var(--border);">ID</th>
+              <th style="padding:14px 12px; text-align:left; border-bottom:1px solid var(--border);">제목</th>
+              <th style="padding:14px 12px; text-align:left; border-bottom:1px solid var(--border);">카테고리</th>
+              <th style="padding:14px 12px; text-align:left; border-bottom:1px solid var(--border);">라인</th>
+              <th style="padding:14px 12px; text-align:left; border-bottom:1px solid var(--border);">위험도</th>
+              <th style="padding:14px 12px; text-align:left; border-bottom:1px solid var(--border);">등록일</th>
             </tr>
-          `,
-            )
-            .join("")}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            ${periodIssues
+              .map(
+                (i) => `
+              <tr onclick="EnvSafety.openDetailModal(${i.id}); closePeriodModal()" 
+                  style="cursor:pointer;">
+                <td style="padding:13px 12px; border-bottom:1px solid var(--border);">${i.id}</td>
+                <td style="padding:13px 12px; border-bottom:1px solid var(--border);">${esc(i.title)}</td>
+                <td style="padding:13px 12px; border-bottom:1px solid var(--border);">${esc(i.category)}</td>
+                <td style="padding:13px 12px; border-bottom:1px solid var(--border);">${esc(i.location)}</td>
+                <td style="padding:13px 12px; border-bottom:1px solid var(--border);">${esc(i.severity)}</td>
+                <td style="padding:13px 12px; border-bottom:1px solid var(--border);">${esc(i.createdAt)}</td>
+              </tr>
+            `,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" onclick="closePeriodModal()">닫기</button>
+      </div>
     </div>
   `;
 
-    let modal = document.getElementById("period-modal");
-    if (!modal) {
-      modal = document.createElement("div");
-      modal.id = "period-modal";
-      modal.style.cssText = `position:fixed; inset:0; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center; z-index:99999;`;
-      document.body.appendChild(modal);
+    let overlay = document.getElementById("period-modal");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "period-modal";
+      overlay.className = "modal-overlay env-safety-page"; // 스타일 적용 목적
+      document.body.appendChild(overlay);
     }
 
-    modal.innerHTML = modalHTML;
-    modal.style.display = "flex";
-
-    // 배경 클릭 시 닫기
-    modal.onclick = (e) => {
-      if (e.target === modal) modal.style.display = "none";
-    };
+    overlay.innerHTML = modalHTML;
+    overlay.style.display = "flex";
   }
+
+  // 모달 닫기 함수
+  window.closePeriodModal = function () {
+    const overlay = document.getElementById("period-modal");
+    if (overlay) overlay.style.display = "none";
+  };
+
+  // 모달 닫기 함수
+  window.closePeriodModal = function () {
+    const overlay = document.getElementById("period-modal");
+    if (overlay) overlay.style.display = "none";
+  };
+
   function renderStats() {
     document.getElementById("stat-total").textContent = issues.length;
     document.getElementById("stat-open").textContent = issues.filter(
@@ -1631,7 +1669,6 @@
     dom8: {
       order: 4,
       width: "auto", // ← 컨텐츠 크기에 맞춤
-      minWidth: "1200px", // 최소 4개 그래프가 예쁘게 보이도록
       height: "auto",
       label: "작업 통계",
       icon: `
