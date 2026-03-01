@@ -679,7 +679,7 @@
           .join("")}
       </div>
     </div>
-    <div id="risk-charts-container" style="padding:16px; overflow-y:auto; overflow-x:hidden; transition:height 0.4s ease;">
+    <div id="risk-charts-container" style="padding:8px 16px 4px; overflow-y:auto; overflow-x:hidden; transition:height 0.35s ease;">
     </div>
   `;
 
@@ -687,38 +687,38 @@
     const containerEl = document.getElementById("risk-charts-container");
 
     const numTypes = currentTypes.length;
-    const HEIGHT_PER_BLOCK = 395; // 실제 측정된 한 블록 높이 (4개 차트)
+    const HEIGHT_PER_BLOCK = 355; // 실제 그래프 4개 높이 + 여백 최소화
     const MAX_VISIBLE = 3;
 
-    const targetHeight =
-      HEIGHT_PER_BLOCK * Math.min(numTypes, MAX_VISIBLE) + 30;
+    const targetHeight = HEIGHT_PER_BLOCK * Math.min(numTypes, MAX_VISIBLE) + 8;
 
-    // 내부 컨테이너 높이
     containerEl.style.height = targetHeight + "px";
+    container.style.height = targetHeight + 72 + "px"; // echart-risk 전체
 
-    // 전체 echart-risk 높이
-    container.style.height = targetHeight + 95 + "px";
-
-    // dom8 패널 자체를 콘텐츠에 맞춰 자동 확장
     const panel8 = document.getElementById("dom8");
     if (panel8) {
       panel8.style.height = "auto";
-      panel8.style.minHeight = targetHeight + 280 + "px"; // 헤더+여백 포함
+      panel8.style.minHeight = targetHeight + 210 + "px";
     }
 
-    // 블록 생성
-    currentTypes.forEach((type) => {
+    currentTypes.forEach((type, index) => {
       const block = document.createElement("div");
-      block.style = `border:1px solid var(--border); border-radius:10px; background:var(--lighter-bg); padding:16px; margin-bottom:24px;`;
+      block.style = `
+      border:1px solid var(--border); 
+      border-radius:10px; 
+      background:var(--lighter-bg); 
+      padding:14px; 
+      margin-bottom: ${index === currentTypes.length - 1 ? "0" : "12px"};
+    `;
       block.innerHTML = `
-      <div style="text-align:center; font-size:0.92rem; font-weight:600; margin-bottom:16px; color:var(--light-color);">
+      <div style="text-align:center; font-size:0.92rem; font-weight:600; margin-bottom:14px; color:var(--light-color);">
         ${type === "전체" ? "전체 발생 추이" : type + " 발생 추이"}
       </div>
-      <div style="display:flex; gap:16px; overflow-x:auto; padding-bottom:8px;">
-        <div style="min-width:340px;"><div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:8px;">월간 발생 횟수</div><div id="chart-${type}-month-total" style="height:245px;"></div></div>
-        <div style="min-width:340px;"><div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:8px;">주간 발생 횟수</div><div id="chart-${type}-week-total" style="height:245px;"></div></div>
-        <div style="min-width:340px;"><div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:8px;">월간 라인별</div><div id="chart-${type}-month-line" style="height:245px;"></div></div>
-        <div style="min-width:340px;"><div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:8px;">주간 라인별</div><div id="chart-${type}-week-line" style="height:245px;"></div></div>
+      <div style="display:flex; gap:16px; overflow-x:auto; padding-bottom:4px;">
+        <div style="min-width:340px;"><div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:6px;">월간 발생 횟수</div><div id="chart-${type}-month-total" style="height:245px;"></div></div>
+        <div style="min-width:340px;"><div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:6px;">주간 발생 횟수</div><div id="chart-${type}-week-total" style="height:245px;"></div></div>
+        <div style="min-width:340px;"><div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:6px;">월간 라인별</div><div id="chart-${type}-month-line" style="height:245px;"></div></div>
+        <div style="min-width:340px;"><div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:6px;">주간 라인별</div><div id="chart-${type}-week-line" style="height:245px;"></div></div>
       </div>
     `;
       containerEl.appendChild(block);
@@ -727,6 +727,24 @@
 
     containerEl.style.overflowY = numTypes > MAX_VISIBLE ? "auto" : "hidden";
   }
+
+  window.toggleRiskType = function (checkbox) {
+    const type = checkbox.value;
+    if (type === "전체") {
+      currentTypes = checkbox.checked
+        ? ["전체"]
+        : currentTypes.filter((t) => t !== "전체");
+    } else {
+      if (checkbox.checked) {
+        currentTypes = currentTypes.filter((t) => t !== "전체");
+        if (!currentTypes.includes(type)) currentTypes.push(type);
+      } else {
+        currentTypes = currentTypes.filter((t) => t !== type);
+      }
+    }
+    if (currentTypes.length === 0) currentTypes = ["전체"];
+    renderRiskChart();
+  };
 
   window.toggleRiskType = function (checkbox) {
     const type = checkbox.value;

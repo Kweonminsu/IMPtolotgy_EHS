@@ -202,15 +202,25 @@
    패널 캔버스 (드래그 자유 배치)
 ════════════════════════════════════════ */
 .env-safety-page .panel-canvas {
-  width: 100%;
   display: flex;
   flex-wrap: wrap;
   gap: 1.5rem;
   padding: 1.5rem;
-  min-height: calc(100vh - 140px);
+
+  /* 핵심 설정 */
+  width: fit-content !important; /* ← 내부 패널 크기에 따라 자동 확장 */
+  min-width: 100% !important; /* 최소 화면 너비는 유지 */
+  max-width: none !important; /* 최대 제한 완전 제거 */
+
+  min-height: calc(100vh - 170px);
+  height: auto !important;
+  max-height: none !important;
+
+  overflow-x: auto !important; /* 가로로 커지면 스크롤 생김 */
+  overflow-y: visible !important; /* 세로는 자연스럽게 확장 */
+
+  align-items: flex-start;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  align-items: flex-start; /* 상단 정렬로 독립적 높이 */
-  position: relative;
 }
 
 /* ════════════════════════════════════════
@@ -218,6 +228,7 @@
 ════════════════════════════════════════ */
 /* 독립적 크기 조절 + 내부 스크롤 + flexbox 지원 */
 .env-safety-page .draggable-panel {
+  max-height: 82vh !important;
   position: relative;
   background-color: var(--light-bg);
   border: 1px solid var(--border);
@@ -237,7 +248,7 @@
   min-width: 300px;
   max-width: none; /* 제한 완전 제거 → 풀 너비 가능 */
   min-height: 200px;
-  max-height: 800px;
+  max-height: 88vh !important;
 
   /* 초기 크기는 JS(PANEL_CONFIG)에서 설정 - CSS에서 width/height 제거 */
 
