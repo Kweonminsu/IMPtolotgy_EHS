@@ -52,7 +52,14 @@
 .env-safety-page {
   font-family: var(--font-main);
   color: var(--light-color);
-  background: var(--dark-bg); /* 전체 페이지 배경 */
+  background: linear-gradient(
+    135deg,
+    var(--light-bg) 0%,
+    var(--secondary-color) 100%
+  ) !important; /* ← 기존 var(--dark-bg) 대신 이걸로 변경 */
+
+  /* 부드러운 연결을 위해 미세한 상단 그림자 제거 */
+  position: relative;
   user-select: none;
 }
 /* ════════════════════════════════════════

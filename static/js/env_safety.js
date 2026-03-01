@@ -15,365 +15,378 @@
   /* ══════════════════════════════════════════════
    ① 샘플 데이터 (서버에서 왔다고 가정)
 ══════════════════════════════════════════════ */
-  const SAMPLE_ISSUES = [
-    // ── 기존 5개 (원본 그대로 유지) ──
-    {
-      id: 1,
-      title: "A동 3층 용접 불꽃 화재 위험",
-      category: "화재",
-      severity: "긴급",
-      status: "미결",
-      location: "A라인",
-      assignee: "김철수",
-      reporter: "홍길동",
-      desc: "용접 작업 중 불꽃이 인근 가연성 자재에 튀는 사고 위험 감지됨.",
-      createdAt: "2025-02-20 09:15",
-      checklist: [
-        {
-          id: 101,
-          text: "용접 구역 가연성 자재 제거",
-          category: "화재",
-          checked: true,
-        },
-        {
-          id: 102,
-          text: "소화기 비치 및 작동 확인",
-          category: "화재",
-          checked: true,
-        },
-        {
-          id: 103,
-          text: "용접 작업 전 화기작업 허가서 발급",
-          category: "화재",
-          checked: false,
-        },
-        {
-          id: 104,
-          text: "방화포 설치 완료 여부",
-          category: "화재",
-          checked: false,
-        },
-      ],
-      todos: [
-        {
-          id: 201,
-          text: "용접 구역 안전 울타리 설치",
-          assignee: "김철수",
-          due: "2025-02-22",
-          priority: "높음",
-          done: false,
-        },
-        {
-          id: 202,
-          text: "화재 예방 교육 실시",
-          assignee: "박안전",
-          due: "2025-02-25",
-          priority: "보통",
-          done: false,
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: "화학약품 보관함 누출 흔적 발견",
-      category: "화학물질",
-      severity: "높음",
-      status: "진행중",
-      location: "B라인",
-      assignee: "이영희",
-      reporter: "최점검",
-      desc: "염산 보관함 하단부에 누액 흔적 발견.",
-      createdAt: "2025-02-21 11:30",
-      checklist: [
-        {
-          id: 111,
-          text: "보호구 착용 확인",
-          category: "화학물질",
-          checked: true,
-        },
-        {
-          id: 112,
-          text: "누출 구역 접근 통제",
-          category: "화학물질",
-          checked: true,
-        },
-        {
-          id: 113,
-          text: "환기 시스템 작동 확인",
-          category: "화학물질",
-          checked: false,
-        },
-      ],
-      todos: [
-        {
-          id: 211,
-          text: "화학약품 보관함 신규 교체",
-          assignee: "이영희",
-          due: "2025-02-27",
-          priority: "높음",
-          done: false,
-        },
-        {
-          id: 212,
-          text: "MSDS 게시판 업데이트",
-          assignee: "박안전",
-          due: "2025-03-01",
-          priority: "보통",
-          done: true,
-        },
-      ],
-    },
-    {
-      id: 3,
-      title: "작업발판 난간 고정 불량",
-      category: "추락",
-      severity: "높음",
-      status: "미결",
-      location: "C라인",
-      assignee: "박민준",
-      reporter: "홍길동",
-      desc: "비계 작업발판 난간 볼트 2개 누락.",
-      createdAt: "2025-02-21 14:00",
-      checklist: [
-        {
-          id: 121,
-          text: "비계 구조 안전 점검",
-          category: "추락",
-          checked: false,
-        },
-        {
-          id: 122,
-          text: "추락 방지망 설치 확인",
-          category: "추락",
-          checked: false,
-        },
-        {
-          id: 123,
-          text: "작업자 안전벨트 착용 확인",
-          category: "추락",
-          checked: true,
-        },
-      ],
-      todos: [
-        {
-          id: 221,
-          text: "난간 볼트 교체 작업",
-          assignee: "박민준",
-          due: "2025-02-23",
-          priority: "높음",
-          done: false,
-        },
-      ],
-    },
-    {
-      id: 4,
-      title: "압착기 소음 기준치 초과",
-      category: "소음",
-      severity: "보통",
-      status: "완료",
-      location: "D라인",
-      assignee: "최수진",
-      reporter: "이관리",
-      desc: "압착기 소음 92dB, 법적 기준 초과.",
-      createdAt: "2025-02-19 08:00",
-      checklist: [
-        {
-          id: 131,
-          text: "소음 측정 기록 보관",
-          category: "소음",
-          checked: true,
-        },
-        {
-          id: 132,
-          text: "귀마개 전 작업자 지급",
-          category: "소음",
-          checked: true,
-        },
-      ],
-      todos: [
-        {
-          id: 231,
-          text: "방음 패널 설치 검토",
-          assignee: "최수진",
-          due: "2025-03-10",
-          priority: "보통",
-          done: true,
-        },
-      ],
-    },
-    {
-      id: 5,
-      title: "소화기 유효기간 만료 3개",
-      category: "화재",
-      severity: "낮음",
-      status: "미결",
-      location: "A라인",
-      assignee: "강동원",
-      reporter: "김점검",
-      desc: "F동 내 소화기 3대 유효기간 경과.",
-      createdAt: "2025-02-22 10:20",
-      checklist: [
-        {
-          id: 141,
-          text: "만료 소화기 위치 파악",
-          category: "화재",
-          checked: true,
-        },
-        {
-          id: 142,
-          text: "교체용 소화기 발주",
-          category: "화재",
-          checked: false,
-        },
-      ],
-      todos: [
-        {
-          id: 241,
-          text: "소화기 3개 신규 구매",
-          assignee: "강동원",
-          due: "2025-02-28",
-          priority: "보통",
-          done: false,
-        },
-      ],
-    },
+  // TESTTEST 샘플데이터
+  // const SAMPLE_ISSUES = [
+  //   // ── 기존 5개 (원본 그대로 유지) ──
+  //   {
+  //     id: 1,
+  //     title: "A동 3층 용접 불꽃 화재 위험",
+  //     category: "화재",
+  //     severity: "긴급",
+  //     status: "미결",
+  //     location: "A라인",
+  //     assignee: "김철수",
+  //     reporter: "홍길동",
+  //     desc: "용접 작업 중 불꽃이 인근 가연성 자재에 튀는 사고 위험 감지됨.",
+  //     createdAt: "2025-02-20 09:15",
+  //     checklist: [
+  //       {
+  //         id: 101,
+  //         text: "용접 구역 가연성 자재 제거",
+  //         category: "화재",
+  //         checked: true,
+  //       },
+  //       {
+  //         id: 102,
+  //         text: "소화기 비치 및 작동 확인",
+  //         category: "화재",
+  //         checked: true,
+  //       },
+  //       {
+  //         id: 103,
+  //         text: "용접 작업 전 화기작업 허가서 발급",
+  //         category: "화재",
+  //         checked: false,
+  //       },
+  //       {
+  //         id: 104,
+  //         text: "방화포 설치 완료 여부",
+  //         category: "화재",
+  //         checked: false,
+  //       },
+  //     ],
+  //     todos: [
+  //       {
+  //         id: 201,
+  //         text: "용접 구역 안전 울타리 설치",
+  //         assignee: "김철수",
+  //         due: "2025-02-22",
+  //         priority: "높음",
+  //         done: false,
+  //       },
+  //       {
+  //         id: 202,
+  //         text: "화재 예방 교육 실시",
+  //         assignee: "박안전",
+  //         due: "2025-02-25",
+  //         priority: "보통",
+  //         done: false,
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "화학약품 보관함 누출 흔적 발견",
+  //     category: "화학물질",
+  //     severity: "높음",
+  //     status: "진행중",
+  //     location: "B라인",
+  //     assignee: "이영희",
+  //     reporter: "최점검",
+  //     desc: "염산 보관함 하단부에 누액 흔적 발견.",
+  //     createdAt: "2025-02-21 11:30",
+  //     checklist: [
+  //       {
+  //         id: 111,
+  //         text: "보호구 착용 확인",
+  //         category: "화학물질",
+  //         checked: true,
+  //       },
+  //       {
+  //         id: 112,
+  //         text: "누출 구역 접근 통제",
+  //         category: "화학물질",
+  //         checked: true,
+  //       },
+  //       {
+  //         id: 113,
+  //         text: "환기 시스템 작동 확인",
+  //         category: "화학물질",
+  //         checked: false,
+  //       },
+  //     ],
+  //     todos: [
+  //       {
+  //         id: 211,
+  //         text: "화학약품 보관함 신규 교체",
+  //         assignee: "이영희",
+  //         due: "2025-02-27",
+  //         priority: "높음",
+  //         done: false,
+  //       },
+  //       {
+  //         id: 212,
+  //         text: "MSDS 게시판 업데이트",
+  //         assignee: "박안전",
+  //         due: "2025-03-01",
+  //         priority: "보통",
+  //         done: true,
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     id: 3,
+  //     title: "작업발판 난간 고정 불량",
+  //     category: "추락",
+  //     severity: "높음",
+  //     status: "미결",
+  //     location: "C라인",
+  //     assignee: "박민준",
+  //     reporter: "홍길동",
+  //     desc: "비계 작업발판 난간 볼트 2개 누락.",
+  //     createdAt: "2025-02-21 14:00",
+  //     checklist: [
+  //       {
+  //         id: 121,
+  //         text: "비계 구조 안전 점검",
+  //         category: "추락",
+  //         checked: false,
+  //       },
+  //       {
+  //         id: 122,
+  //         text: "추락 방지망 설치 확인",
+  //         category: "추락",
+  //         checked: false,
+  //       },
+  //       {
+  //         id: 123,
+  //         text: "작업자 안전벨트 착용 확인",
+  //         category: "추락",
+  //         checked: true,
+  //       },
+  //     ],
+  //     todos: [
+  //       {
+  //         id: 221,
+  //         text: "난간 볼트 교체 작업",
+  //         assignee: "박민준",
+  //         due: "2025-02-23",
+  //         priority: "높음",
+  //         done: false,
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     id: 4,
+  //     title: "압착기 소음 기준치 초과",
+  //     category: "소음",
+  //     severity: "보통",
+  //     status: "완료",
+  //     location: "D라인",
+  //     assignee: "최수진",
+  //     reporter: "이관리",
+  //     desc: "압착기 소음 92dB, 법적 기준 초과.",
+  //     createdAt: "2025-02-19 08:00",
+  //     checklist: [
+  //       {
+  //         id: 131,
+  //         text: "소음 측정 기록 보관",
+  //         category: "소음",
+  //         checked: true,
+  //       },
+  //       {
+  //         id: 132,
+  //         text: "귀마개 전 작업자 지급",
+  //         category: "소음",
+  //         checked: true,
+  //       },
+  //     ],
+  //     todos: [
+  //       {
+  //         id: 231,
+  //         text: "방음 패널 설치 검토",
+  //         assignee: "최수진",
+  //         due: "2025-03-10",
+  //         priority: "보통",
+  //         done: true,
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     id: 5,
+  //     title: "소화기 유효기간 만료 3개",
+  //     category: "화재",
+  //     severity: "낮음",
+  //     status: "미결",
+  //     location: "A라인",
+  //     assignee: "강동원",
+  //     reporter: "김점검",
+  //     desc: "F동 내 소화기 3대 유효기간 경과.",
+  //     createdAt: "2025-02-22 10:20",
+  //     checklist: [
+  //       {
+  //         id: 141,
+  //         text: "만료 소화기 위치 파악",
+  //         category: "화재",
+  //         checked: true,
+  //       },
+  //       {
+  //         id: 142,
+  //         text: "교체용 소화기 발주",
+  //         category: "화재",
+  //         checked: false,
+  //       },
+  //     ],
+  //     todos: [
+  //       {
+  //         id: 241,
+  //         text: "소화기 3개 신규 구매",
+  //         assignee: "강동원",
+  //         due: "2025-02-28",
+  //         priority: "보통",
+  //         done: false,
+  //       },
+  //     ],
+  //   },
 
-    // ── 아래부터 23개 완전 랜덤 생성 (체크리스트·To-Do 모두 다양하게) ──
-    ...Array.from({ length: 23 }, (_, i) => {
-      const lines = ["A라인", "B라인", "C라인", "D라인"];
-      const cats = ["화재", "화학물질", "추락", "소음", "전기", "기타"];
-      const sevs = ["낮음", "보통", "높음", "긴급"];
-      const statuses = ["미결", "진행중", "완료"];
+  //   // ── 아래부터 29개 완전 랜덤 생성 (체크리스트·To-Do 모두 다양하게) ──
+  //   ...Array.from({ length: 29 }, (_, i) => {
+  //     const lines = ["A라인", "B라인", "C라인", "D라인"];
+  //     const cats = ["화재", "화학물질", "추락", "소음", "전기", "기타"];
+  //     const sevs = ["낮음", "보통", "높음", "긴급"];
+  //     const statuses = ["미결", "진행중", "완료"];
 
-      const cat = cats[i % 6];
-      const line = lines[i % 4];
-      const dateList = [
-        "2025-01-05",
-        "2025-01-08",
-        "2025-01-12",
-        "2025-01-15",
-        "2025-01-18",
-        "2025-01-22",
-        "2025-01-25",
-        "2025-02-03",
-        "2025-02-07",
-        "2025-02-10",
-        "2025-02-14",
-        "2025-02-17",
-        "2025-02-20",
-        "2025-02-24",
-        "2025-03-02",
-        "2025-03-05",
-        "2025-03-09",
-        "2025-03-12",
-        "2025-03-16",
-        "2025-03-19",
-        "2025-03-23",
-        "2025-03-27",
-      ];
+  //     const cat = cats[i % 6];
+  //     const line = lines[i % 4];
+  //     const dateList = [
+  //       "2025-01-05",
+  //       "2025-01-08",
+  //       "2025-01-12",
+  //       "2025-01-15",
+  //       "2025-01-18",
+  //       "2025-01-22",
+  //       "2025-01-25",
+  //       "2025-02-03",
+  //       "2025-02-07",
+  //       "2025-02-10",
+  //       "2025-02-14",
+  //       "2025-02-17",
+  //       "2025-02-20",
+  //       "2025-02-24",
+  //       "2025-03-02",
+  //       "2025-03-05",
+  //       "2025-03-09",
+  //       "2025-03-12",
+  //       "2025-03-16",
+  //       "2025-03-19",
+  //       "2025-03-23",
+  //       "2025-03-27",
+  //       "2026-01-04",
+  //       "2026-01-11",
+  //       "2026-01-18",
+  //       "2026-01-25",
+  //       "2026-02-01",
+  //       "2026-02-08",
+  //       "2026-02-15",
+  //       "2026-02-22",
+  //       "2026-03-01",
+  //       "2026-03-08",
+  //       "2026-03-15",
+  //       "2026-03-22",
+  //     ];
 
-      const randomDate = dateList[Math.floor(Math.random() * dateList.length)];
+  //     const randomDate = dateList[i % dateList.length]; // 순차적으로 날짜 할당
 
-      // 체크리스트 랜덤 생성 (2~5개)
-      const checkPool = {
-        화재: [
-          "용접 구역 가연물 제거",
-          "소화기 압력 확인",
-          "화기작업 허가서 발급",
-          "방화문 작동 테스트",
-          "비상조명 점검",
-        ],
-        화학물질: [
-          "보호구 착용 확인",
-          "누출 감지기 작동",
-          "환기 시스템 점검",
-          "MSDS 게시",
-          "중화제 비치",
-        ],
-        추락: [
-          "안전벨트 착용",
-          "난간 고정 볼트 확인",
-          "추락 방지망 설치",
-          "작업발판 안정성 점검",
-        ],
-        소음: [
-          "소음 측정 기록",
-          "귀마개 지급",
-          "방음 패널 설치",
-          "작업자 청력 검사",
-        ],
-        전기: [
-          "접지 확인",
-          "누전차단기 테스트",
-          "전선 피복 상태 점검",
-          "배전반 청소",
-        ],
-        기타: [
-          "안전 표지판 부착",
-          "비상구 통로 확보",
-          "소방로 확보",
-          "작업자 안전교육",
-        ],
-      };
+  //     // 체크리스트 랜덤 생성 (2~5개)
+  //     const checkPool = {
+  //       화재: [
+  //         "용접 구역 가연물 제거",
+  //         "소화기 압력 확인",
+  //         "화기작업 허가서 발급",
+  //         "방화문 작동 테스트",
+  //         "비상조명 점검",
+  //       ],
+  //       화학물질: [
+  //         "보호구 착용 확인",
+  //         "누출 감지기 작동",
+  //         "환기 시스템 점검",
+  //         "MSDS 게시",
+  //         "중화제 비치",
+  //       ],
+  //       추락: [
+  //         "안전벨트 착용",
+  //         "난간 고정 볼트 확인",
+  //         "추락 방지망 설치",
+  //         "작업발판 안정성 점검",
+  //       ],
+  //       소음: [
+  //         "소음 측정 기록",
+  //         "귀마개 지급",
+  //         "방음 패널 설치",
+  //         "작업자 청력 검사",
+  //       ],
+  //       전기: [
+  //         "접지 확인",
+  //         "누전차단기 테스트",
+  //         "전선 피복 상태 점검",
+  //         "배전반 청소",
+  //       ],
+  //       기타: [
+  //         "안전 표지판 부착",
+  //         "비상구 통로 확보",
+  //         "소방로 확보",
+  //         "작업자 안전교육",
+  //       ],
+  //     };
 
-      const checks = Array.from(
-        { length: 2 + Math.floor(Math.random() * 4) },
-        (_, idx) => ({
-          id: 300 + i * 10 + idx,
-          text: checkPool[cat][idx % checkPool[cat].length],
-          category: cat,
-          checked: Math.random() > 0.5,
-        }),
-      );
+  //     const checks = Array.from(
+  //       { length: 2 + Math.floor(Math.random() * 4) },
+  //       (_, idx) => ({
+  //         id: 300 + i * 10 + idx,
+  //         text: checkPool[cat][idx % checkPool[cat].length],
+  //         category: cat,
+  //         checked: Math.random() > 0.5,
+  //       }),
+  //     );
 
-      // To-Do 랜덤 생성 (1~4개)
-      const todoPool = {
-        화재: [
-          "화재 예방 교육 실시",
-          "소화기 교체",
-          "용접 작업 허가 프로세스 개선",
-        ],
-        화학물질: ["누출 센서 교체", "화학물질 보관 기준 강화", "MSDS 최신화"],
-        추락: ["난간 보강 공사", "안전망 추가 설치", "작업자 안전벨트 점검"],
-        소음: [
-          "방음 패널 설치",
-          "작업자 청력 보호구 지급",
-          "소음 저감 장치 검토",
-        ],
-        전기: ["배전반 점검", "접지 저항 측정", "전기 설비 정기 점검"],
-        기타: ["안전 표지판 교체", "비상구 조명 교체", "작업자 안전교육 실시"],
-      };
+  //     // To-Do 랜덤 생성 (1~4개)
+  //     const todoPool = {
+  //       화재: [
+  //         "화재 예방 교육 실시",
+  //         "소화기 교체",
+  //         "용접 작업 허가 프로세스 개선",
+  //       ],
+  //       화학물질: ["누출 센서 교체", "화학물질 보관 기준 강화", "MSDS 최신화"],
+  //       추락: ["난간 보강 공사", "안전망 추가 설치", "작업자 안전벨트 점검"],
+  //       소음: [
+  //         "방음 패널 설치",
+  //         "작업자 청력 보호구 지급",
+  //         "소음 저감 장치 검토",
+  //       ],
+  //       전기: ["배전반 점검", "접지 저항 측정", "전기 설비 정기 점검"],
+  //       기타: ["안전 표지판 교체", "비상구 조명 교체", "작업자 안전교육 실시"],
+  //     };
 
-      const todos = Array.from(
-        { length: 1 + Math.floor(Math.random() * 4) },
-        (_, idx) => ({
-          id: 400 + i * 10 + idx,
-          text: todoPool[cat][idx % todoPool[cat].length],
-          assignee: ["김철수", "이영희", "박민준", "최수진", "강동원"][
-            Math.floor(Math.random() * 5)
-          ],
-          due: `${randomDate.slice(0, 10)}`,
-          priority: ["낮음", "보통", "높음"][Math.floor(Math.random() * 3)],
-          done: Math.random() > 0.6,
-        }),
-      );
+  //     const todos = Array.from(
+  //       { length: 1 + Math.floor(Math.random() * 4) },
+  //       (_, idx) => ({
+  //         id: 400 + i * 10 + idx,
+  //         text: todoPool[cat][idx % todoPool[cat].length],
+  //         assignee: ["김철수", "이영희", "박민준", "최수진", "강동원"][
+  //           Math.floor(Math.random() * 5)
+  //         ],
+  //         due: `${randomDate}`,
+  //         priority: ["낮음", "보통", "높음"][Math.floor(Math.random() * 3)],
+  //         done: Math.random() > 0.6,
+  //       }),
+  //     );
 
-      return {
-        id: 6 + i,
-        title: `${line} ${cat} 안전 이슈 #${6 + i}`,
-        category: cat,
-        severity: sevs[i % 4],
-        status: statuses[i % 3],
-        location: line,
-        assignee: ["김철수", "이영희", "박민준", "최수진", "강동원"][i % 5],
-        reporter: "홍길동",
-        desc: `자동 생성된 ${cat} 관련 안전 이슈입니다.`,
-        createdAt: `${randomDate} ${String(8 + (i % 12)).padStart(2, "0")}:00`,
-        checklist: checks,
-        todos: todos,
-      };
-    }),
-  ];
+  //     return {
+  //       id: 6 + i,
+  //       title: `${line} ${cat} 안전 이슈 #${6 + i}`,
+  //       category: cat,
+  //       severity: sevs[i % 4],
+  //       status: statuses[i % 3],
+  //       location: line,
+  //       assignee: ["김철수", "이영희", "박민준", "최수진", "강동원"][i % 5],
+  //       reporter: "홍길동",
+  //       desc: `자동 생성된 ${cat} 관련 안전 이슈입니다.`,
+  //       createdAt: `${randomDate} ${String(8 + (i % 12)).padStart(2, "0")}:00`,
+  //       checklist: checks,
+  //       todos: todos,
+  //     };
+  //   }),
+  // ];
 
   /* ══════════════════════════════════════════════
    ② API 레이어
@@ -433,12 +446,15 @@
   }
 
   /* 이슈 전체 조회 */
+  /* ====================== 대시보드 API ====================== */
+  async function apiGetDashboard() {
+    return apiRequest("GET", "/dashboard");
+  }
+
+  /* 기존 apiGetIssues는 dashboard를 통해 가져오도록 래퍼로 유지 */
   async function apiGetIssues() {
-    /* ── 연동 시 ──
-  return apiRequest('GET', '/issues');
-  ──────────── */
-    await new Promise((r) => setTimeout(r, 400)); // 로딩 시뮬레이션
-    return JSON.parse(JSON.stringify(SAMPLE_ISSUES)); // 깊은 복사
+    const data = await apiGetDashboard();
+    return data.issues || [];
   }
 
   /* 이슈 생성 */
@@ -679,7 +695,7 @@
           .join("")}
       </div>
     </div>
-    <div id="risk-charts-container" style="padding:8px 16px 4px; overflow-y:auto; overflow-x:hidden; transition:height 0.35s ease;">
+    <div id="risk-charts-container" style="padding:8px 0px 4px; overflow-y:auto; overflow-x:hidden; transition:height 0.35s ease;">
     </div>
   `;
 
@@ -687,7 +703,7 @@
     const containerEl = document.getElementById("risk-charts-container");
 
     const numTypes = currentTypes.length;
-    const HEIGHT_PER_BLOCK = 355; // 실제 그래프 4개 높이 + 여백 최소화
+    const HEIGHT_PER_BLOCK = 290; // 실제 그래프 4개 높이 + 여백 최소화
     const MAX_VISIBLE = 3;
 
     const targetHeight = HEIGHT_PER_BLOCK * Math.min(numTypes, MAX_VISIBLE) + 8;
@@ -711,9 +727,7 @@
       margin-bottom: ${index === currentTypes.length - 1 ? "0" : "12px"};
     `;
       block.innerHTML = `
-      <div style="text-align:center; font-size:0.92rem; font-weight:600; margin-bottom:14px; color:var(--light-color);">
-        ${type === "전체" ? "전체 발생 추이" : type + " 발생 추이"}
-      </div>
+
       <div style="display:flex; gap:16px; overflow-x:auto; padding-bottom:4px;">
         <div style="min-width:340px;"><div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:6px;">월간 발생 횟수</div><div id="chart-${type}-month-total" style="height:245px;"></div></div>
         <div style="min-width:340px;"><div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:6px;">주간 발생 횟수</div><div id="chart-${type}-week-total" style="height:245px;"></div></div>
@@ -1156,6 +1170,149 @@
       .join("");
   }
 
+  /* ====================== DOM10 : 연도별 생산라인별 라인 그래프 (너비 문제 완전 해결) ====================== */
+  function renderYearlyLineCharts() {
+    const container = document.getElementById("yearly-charts-container");
+    if (!container) return;
+
+    container.innerHTML = "";
+    container.style.display = "flex";
+    container.style.flexWrap = "wrap";
+    container.style.gap = "24px";
+    container.style.padding = "16px 12px";
+    container.style.width = "100%"; // ← 추가
+
+    const COLOR_PALETTE = [
+      "#2f6fed",
+      "#16a34a",
+      "#f59e0b",
+      "#e5484d",
+      "#8b5cf6",
+      "#ec4899",
+      "#14b8a6",
+    ];
+
+    const uniqueLines = [
+      ...new Set(issues.map((i) => i.location).filter(Boolean)),
+    ].sort();
+
+    const yearly = {};
+    issues.forEach((issue) => {
+      const year = issue.createdAt.substring(0, 4);
+      const month = parseInt(issue.createdAt.substring(5, 7));
+      if (!yearly[year]) yearly[year] = {};
+      if (!yearly[year][month]) {
+        yearly[year][month] = {};
+        uniqueLines.forEach((l) => (yearly[year][month][l] = 0));
+      }
+      const line = issue.location || "기타";
+      if (yearly[year][month][line] !== undefined) yearly[year][month][line]++;
+    });
+
+    const years = Object.keys(yearly).sort();
+
+    years.forEach((year) => {
+      const yearData = yearly[year] || {};
+      const yearTotal = issues.filter((i) =>
+        i.createdAt.startsWith(year),
+      ).length;
+
+      const months = Array.from({ length: 12 }, (_, i) => `${i + 1}월`);
+
+      const series = uniqueLines.map((line, idx) => ({
+        name: line,
+        type: "line",
+        smooth: true,
+        symbol: "circle",
+        symbolSize: 7,
+        lineStyle: { width: 3 },
+        itemStyle: { color: COLOR_PALETTE[idx % COLOR_PALETTE.length] },
+        emphasis: { lineStyle: { width: 6 } },
+        label: {
+          show: true,
+          position: "top",
+          fontSize: 10,
+          fontWeight: 600,
+          color: "#222",
+          formatter: (p) => (p.data > 0 ? p.data : ""),
+        },
+        data: months.map((_, i) => {
+          const m = i + 1;
+          return yearData[m] ? yearData[m][line] || 0 : 0;
+        }),
+      }));
+
+      const block = document.createElement("div");
+      block.style.flex = "1 1 720px";
+      block.style.minWidth = "720px";
+      block.style.maxWidth = "calc(50% - 12px)"; // ← 강제 반반 제한
+      block.style.background = "var(--lighter-bg)";
+      block.style.border = "1px solid var(--border)";
+      block.style.borderRadius = "var(--radius)";
+      block.style.boxShadow = "var(--shadow)";
+      block.style.padding = "18px 20px 26px";
+      block.style.boxSizing = "border-box";
+
+      block.innerHTML = `
+      <div style="text-align:center; font-size:1rem; font-weight:700; margin-bottom:16px; color:var(--light-color);">
+        ${year}년 월간 발생 횟수
+        <span style="margin-left:10px; background:var(--primary-dim); color:var(--primary-color); font-size:0.82rem; padding:3px 11px; border-radius:999px;">
+          총 ${yearTotal}건
+        </span>
+      </div>
+      <div id="year-chart-${year}" style="height: 410px; width: 100%;"></div>
+    `;
+
+      container.appendChild(block);
+
+      // ECharts 초기화 + 너비 강제 보정
+      const chartDom = document.getElementById(`year-chart-${year}`);
+      const chart = echarts.init(chartDom);
+
+      chart.setOption({
+        tooltip: { trigger: "axis", axisPointer: { type: "cross" } },
+        legend: {
+          left: "center",
+          bottom: 12,
+          itemWidth: 20,
+          itemHeight: 4,
+          textStyle: { fontSize: 12.5 },
+        },
+        grid: { left: "3%", right: "4%", bottom: "24%", containLabel: true },
+        xAxis: {
+          type: "category",
+          data: months,
+          axisLabel: { fontSize: 12.5, interval: 0 },
+        },
+        yAxis: {
+          type: "value",
+          name: "발생 건수",
+          minInterval: 1,
+          axisLabel: { fontSize: 12 },
+        },
+        series: series,
+      });
+
+      // ← 핵심 해결: DOM 렌더링 후 resize 강제 호출
+      setTimeout(() => {
+        chart.resize();
+      }, 30);
+
+      // 클릭 모달 (기존 DOM8 재활용)
+      chart.on("click", (params) => {
+        if (params.componentType === "series") {
+          const monthNum = parseInt(params.name);
+          const periodKey = `${year}-${String(monthNum).padStart(2, "0")}`;
+          showPeriodDetailModal(periodKey, true, "전체");
+        }
+      });
+    });
+
+    if (years.length === 0) {
+      container.innerHTML = `<div class="empty-msg">데이터가 없습니다.</div>`;
+    }
+  }
+
   function renderAll() {
     renderStats();
     renderIssues();
@@ -1166,10 +1323,50 @@
     renderRiskSummary();
     renderRiskChart();
     renderIssueTable();
+    renderYearlyLineCharts();
+    forceFixedPanelWidth();
+
+    // 창 크기 변경 시 모든 그래프 자동 리사이즈
+    window.addEventListener("resize", () => {
+      document
+        .querySelectorAll("#yearly-charts-container .echarts")
+        .forEach((el) => {
+          if (el.__echarts_instance__) el.__echarts_instance__.resize();
+        });
+    });
   }
 
   /* ══════════════════════════════════════════════
    ⑦ 데이터 초기 로드 (API)
+══════════════════════════════════════════════ */
+  // TESTTEST 데이터 TESTTEST
+  // async function loadAllData() {
+  //   const activePanels = Object.keys(PANEL_CONFIG).filter(
+  //     (id) => PANEL_CONFIG[id].enabled !== false,
+  //   );
+
+  //   activePanels.forEach((id) => setLoading(id, true));
+  //   try {
+  //     issues = await apiGetIssues();
+  //     nextIssueId = Math.max(...issues.map((i) => i.id), 0) + 1;
+  //     nextSubId =
+  //       Math.max(
+  //         ...issues.flatMap((i) =>
+  //           [...i.checklist, ...i.todos].map((x) => x.id),
+  //         ),
+  //         999,
+  //       ) + 1;
+  //     renderAll();
+  //   } catch (e) {
+  //     showToast("데이터 로드 실패: " + e.message, "error");
+  //   } finally {
+  //     activePanels.forEach((id) => setLoading(id, false));
+  //   }
+  // }
+  // TESTTEST 데이터 TESTTEST
+
+  /* ══════════════════════════════════════════════
+   ⑦ 데이터 초기 로드 (대시보드 API - 안전 버전)
 ══════════════════════════════════════════════ */
   async function loadAllData() {
     const activePanels = Object.keys(PANEL_CONFIG).filter(
@@ -1177,19 +1374,51 @@
     );
 
     activePanels.forEach((id) => setLoading(id, true));
+
     try {
-      issues = await apiGetIssues();
-      nextIssueId = Math.max(...issues.map((i) => i.id), 0) + 1;
+      console.log("📡 대시보드 API 호출 중...");
+
+      const dashboard = await apiGetDashboard();
+
+      // 🔥 안전 처리 추가
+      if (!dashboard || typeof dashboard !== "object") {
+        throw new Error(
+          "대시보드 API가 null 또는 잘못된 데이터를 반환했습니다.",
+        );
+      }
+
+      if (!Array.isArray(dashboard.issues)) {
+        throw new Error("issues 배열이 없습니다. 백엔드 응답을 확인하세요.");
+      }
+
+      // 성공 시 데이터 적용
+      issues = dashboard.issues;
+
+      nextIssueId = Math.max(...issues.map((i) => i.id || 0), 0) + 1;
       nextSubId =
         Math.max(
-          ...issues.flatMap((i) =>
-            [...i.checklist, ...i.todos].map((x) => x.id),
-          ),
+          ...issues.flatMap((i) => [
+            ...(i.checklist || []).map((c) => c.id || 0),
+            ...(i.todos || []).map((t) => t.id || 0),
+          ]),
           999,
         ) + 1;
+
+      console.log(`✅ 대시보드 로드 성공 | 총 ${issues.length}개 이슈`);
+
       renderAll();
     } catch (e) {
-      showToast("데이터 로드 실패: " + e.message, "error");
+      console.error("❌ 대시보드 로드 실패:", e);
+
+      showToast(
+        "서버에서 데이터를 불러오지 못했습니다. 샘플 데이터를 사용합니다.",
+        "error",
+      );
+
+      // 🔥 백엔드 실패 시 임시로 샘플 데이터 사용 (개발 중 매우 편리)
+      issues = generateSampleIssues(); // 아래에 함수 추가 예정
+
+      renderAll();
     } finally {
       activePanels.forEach((id) => setLoading(id, false));
     }
@@ -1685,8 +1914,8 @@
     },
 
     dom8: {
-      order: 4,
-      width: "1500px", // ← 컨텐츠 크기에 맞춤
+      order: 5,
+      width: "1500px",
       height: "auto",
       label: "작업 통계",
       icon: `
@@ -1736,7 +1965,7 @@
     },
 
     dom6: {
-      order: 6,
+      order: 4,
       width: "490px",
       height: "490px",
       label: "활동 타임라인",
@@ -1785,10 +2014,11 @@
     `,
       enabled: false,
     },
+
     dom9: {
-      order: 5,
-      width: "700px",
-      height: "500px",
+      order: 7,
+      width: "1500px",
+      height: "620px",
       label: "이슈 테이블",
       icon: `
       <!-- 테이블 아이콘 -->
@@ -1802,6 +2032,20 @@
     `,
       enabled: true,
     },
+
+    dom10: {
+      order: 6,
+      width: "1500px",
+      height: "620px",
+      label: "연도별 발생 추이",
+      icon: `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M3 3v18h18"/>
+          <path d="M3 12h4l3-9 3 18 3-9 3 6"/>
+        </svg>
+      `,
+      enabled: true,
+    },
   };
 
   /* ====================== enabled: false 패널 완전 숨김 ====================== */
@@ -1810,6 +2054,41 @@
       const panel = document.getElementById(id);
       if (panel) {
         panel.style.display = PANEL_CONFIG[id].enabled !== false ? "" : "none";
+      }
+    });
+  }
+
+  // PANEL_CONFIG의 width/height를 "콘텐츠보다 작게 만들지 않도록" 안전하게 적용
+  function forceFixedPanelWidth() {
+    Object.keys(PANEL_CONFIG).forEach((id) => {
+      const config = PANEL_CONFIG[id];
+      if (!config.enabled) return;
+
+      const panel = document.getElementById(id);
+      if (!panel) return;
+
+      // 1. 현재 콘텐츠의 자연 크기 측정 (스크롤 포함)
+      const naturalWidth = panel.scrollWidth || 400;
+      const naturalHeight = panel.scrollHeight || 300;
+
+      // 2. width 처리
+      if (config.width && config.width !== "auto") {
+        const configW = parseInt(config.width);
+        // config가 자연 크기보다 크면 config 적용, 작으면 자연 크기 유지
+        const finalW = Math.max(configW, naturalWidth);
+        panel.style.width = finalW + "px";
+        panel.style.minWidth = finalW + "px";
+        panel.style.maxWidth = finalW + "px";
+        panel.style.flex = `0 0 ${finalW}px`;
+      }
+
+      // 3. height 처리
+      if (config.height && config.height !== "auto") {
+        const configH = parseInt(config.height);
+        const finalH = Math.max(configH, naturalHeight);
+        panel.style.height = finalH + "px";
+        panel.style.minHeight = finalH + "px";
+        panel.style.maxHeight = finalH + "px";
       }
     });
   }
@@ -2033,9 +2312,13 @@
     applyLayout(); // 순서 + 저장된 크기 복원
     hideDisabledPanels(); // enabled: false 패널 완전 숨김
     initPanelJump(); // 검색 가능한 입력창 버전
-
     initDragAndDrop();
     initResize();
+
+    // config 설정에 맞춰 패널 사이즈 조절(원본 값보다 크게만 설정 가능)
+    forceFixedPanelWidth();
+    // (항상 PANEL_CONFIG 순서 강제 적용)
+    forceSortByPanelConfigOrder();
 
     // 크기/제목 처리
     const hasCustomSizes = layout.some(
@@ -2051,6 +2334,20 @@
       console.log("localStorage에서 크기 복원 → 제목만 업데이트");
       updatePanelTitles();
     }
+  }
+
+  // (항상 PANEL_CONFIG 순서 강제 적용)
+  function forceSortByPanelConfigOrder() {
+    const container = document.getElementById("panel-canvas");
+    const sortedIds = Object.entries(PANEL_CONFIG)
+      .filter(([_, c]) => c.enabled !== false)
+      .sort((a, b) => a[1].order - b[1].order)
+      .map(([id]) => id);
+
+    sortedIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) container.appendChild(el);
+    });
   }
 
   /* 드래그 시작 - 클론만 내부 콘텐츠 삭제 + drag-handle, block-header 스타일 완전 유지 */
