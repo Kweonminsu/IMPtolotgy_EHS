@@ -448,7 +448,7 @@
   /* 이슈 전체 조회 */
   /* ====================== 대시보드 API ====================== */
   async function apiGetDashboard() {
-    return apiRequest("GET", "/dashboard");
+    return apiRequest("GET", "/api/dashboard");
   }
 
   /* 기존 apiGetIssues는 dashboard를 통해 가져오도록 래퍼로 유지 */
@@ -1335,35 +1335,6 @@
         });
     });
   }
-
-  /* ══════════════════════════════════════════════
-   ⑦ 데이터 초기 로드 (API)
-══════════════════════════════════════════════ */
-  // TESTTEST 데이터 TESTTEST
-  // async function loadAllData() {
-  //   const activePanels = Object.keys(PANEL_CONFIG).filter(
-  //     (id) => PANEL_CONFIG[id].enabled !== false,
-  //   );
-
-  //   activePanels.forEach((id) => setLoading(id, true));
-  //   try {
-  //     issues = await apiGetIssues();
-  //     nextIssueId = Math.max(...issues.map((i) => i.id), 0) + 1;
-  //     nextSubId =
-  //       Math.max(
-  //         ...issues.flatMap((i) =>
-  //           [...i.checklist, ...i.todos].map((x) => x.id),
-  //         ),
-  //         999,
-  //       ) + 1;
-  //     renderAll();
-  //   } catch (e) {
-  //     showToast("데이터 로드 실패: " + e.message, "error");
-  //   } finally {
-  //     activePanels.forEach((id) => setLoading(id, false));
-  //   }
-  // }
-  // TESTTEST 데이터 TESTTEST
 
   /* ══════════════════════════════════════════════
    ⑦ 데이터 초기 로드 (대시보드 API - 안전 버전)
