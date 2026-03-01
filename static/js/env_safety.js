@@ -756,10 +756,11 @@
    ⑦ 데이터 초기 로드 (API)
 ══════════════════════════════════════════════ */
   async function loadAllData() {
-    /* 모든 패널 로딩 표시 */
-    ["dom2", "dom3", "dom4", "dom5", "dom6", "dom7"].forEach((id) =>
-      setLoading(id, true),
+    const activePanels = Object.keys(PANEL_CONFIG).filter(
+      (id) => PANEL_CONFIG[id].enabled !== false,
     );
+
+    activePanels.forEach((id) => setLoading(id, true));
     try {
       issues = await apiGetIssues();
       nextIssueId = Math.max(...issues.map((i) => i.id), 0) + 1;
@@ -774,9 +775,7 @@
     } catch (e) {
       showToast("데이터 로드 실패: " + e.message, "error");
     } finally {
-      ["dom2", "dom3", "dom4", "dom5", "dom6", "dom7"].forEach((id) =>
-        setLoading(id, false),
-      );
+      activePanels.forEach((id) => setLoading(id, false));
     }
   }
 
@@ -1250,7 +1249,7 @@
 ══════════════════════════════════════════════ */
   const PANEL_CONFIG = {
     dom2: {
-      order: 1,
+      order: 3,
       width: "500px",
       height: "450px",
       label: "이슈 목록",
@@ -1270,7 +1269,7 @@
     },
 
     dom8: {
-      order: 2,
+      order: 4,
       width: "600px",
       height: "400px",
       label: "위험도 통계 차트",
@@ -1287,26 +1286,8 @@
       enabled: true,
     },
 
-    dom9: {
-      order: 3,
-      width: "700px",
-      height: "500px",
-      label: "이슈 테이블",
-      icon: `
-      <!-- 테이블 아이콘 -->
-      <svg width="16" height="16" viewBox="0 0 24 24"
-        fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="4" width="18" height="16"/>
-        <line x1="3" y1="10" x2="21" y2="10"/>
-        <line x1="9" y1="4" x2="9" y2="20"/>
-        <line x1="15" y1="4" x2="15" y2="20"/>
-      </svg>
-    `,
-      enabled: true,
-    },
-
     dom3: {
-      order: 4,
+      order: 2,
       width: "450px",
       height: "380px",
       label: "체크리스트 현황",
@@ -1321,7 +1302,7 @@
     },
 
     dom4: {
-      order: 5,
+      order: 1,
       width: "450px",
       height: "380px",
       label: "To-Do 현황",
@@ -1357,7 +1338,7 @@
     },
 
     dom5: {
-      order: 7,
+      order: 99,
       width: "400px",
       height: "350px",
       label: "카테고리 통계",
@@ -1369,11 +1350,11 @@
         <path d="M12 2 A10 10 0 0 1 22 12 L12 12 Z"/>
       </svg>
     `,
-      enabled: true,
+      enabled: false,
     },
 
     dom7: {
-      order: 8,
+      order: 99,
       width: "400px",
       height: "300px",
       label: "위험도 요약",
@@ -1386,10 +1367,72 @@
         <circle cx="12" cy="18" r="1"/>
       </svg>
     `,
+      enabled: false,
+    },
+    dom9: {
+      order: 5,
+      width: "700px",
+      height: "500px",
+      label: "이슈 테이블",
+      icon: `
+      <!-- 테이블 아이콘 -->
+      <svg width="16" height="16" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="16"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+        <line x1="9" y1="4" x2="9" y2="20"/>
+        <line x1="15" y1="4" x2="15" y2="20"/>
+      </svg>
+    `,
       enabled: true,
     },
   };
+  // 패널 점프 드롭다운 초기화
+  function initPanelJumpSelect() {
+    const select = document.getElementById("panel-jump-select");
+    if (!select) return;
+    // 기본옵션
+    select.innerHTML = '<option value="">패널 검색</option>';
 
+    // order 순서대로 정렬해서 추가
+    Object.entries(PANEL_CONFIG)
+      .filter(([_, config]) => config.enabled !== false)
+      .sort((a, b) => a[1].order - b[1].order)
+      .forEach(([id, config]) => {
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = config.label || id;
+        select.appendChild(option);
+      });
+
+    // 선택 시 스크롤 + 하이라이트
+    select.onchange = () => {
+      const id = select.value;
+      if (!id) return;
+
+      const panel = document.getElementById(id);
+      if (!panel) return;
+
+      // 스크롤 이동 (부드럽게)
+      panel.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      // 하이라이트 효과 (2초 동안)
+      panel.style.transition = "all 0.3s";
+      panel.style.boxShadow = "0 0 0 4px rgba(47, 111, 237, 0.6)";
+      panel.style.transform = "scale(1.02)";
+
+      setTimeout(() => {
+        panel.style.boxShadow = "";
+        panel.style.transform = "";
+      }, 2000);
+
+      // 드롭다운 초기화
+      select.value = "";
+    };
+  }
   // PANEL_CONFIG에서 활성화된 패널만 순서대로 추출
   // 역할: order 기준 정렬 + enabled=true인 패널만 반환
   function getDefaultLayout() {
@@ -1507,7 +1550,7 @@
 
     // 3. PANEL_CONFIG 기본 크기 + 제목 적용
     setInitialPanelSizes();
-
+    initPanelJumpSelect();
     showToast("레이아웃이 초기화되었습니다.");
   }
 
@@ -2059,7 +2102,7 @@
 
     initDragAndDrop();
     initResize();
-
+    initPanelJumpSelect();
     await loadAllData();
 
     setTimeout(renderCategoryStats, 150);

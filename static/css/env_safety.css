@@ -1898,3 +1898,21 @@
 .env-safety-page .draggable-panel table tr:nth-child(even) {
   background: rgba(0, 0, 0, 0.015);
 }
+
+/* 패널 빠른 이동 드롭다운 */
+.env-safety-page .panel-jump-select {
+  background: var(--lighter-bg);
+  border: 1px solid var(--border2);
+  color: var(--gray-color);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  min-width: 160px;
+}
+
+.env-safety-page .panel-jump-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  color: var(--light-color);
+}
