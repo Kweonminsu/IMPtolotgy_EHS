@@ -654,49 +654,103 @@
   `;
   }
 
+  let currentTypes = ["전체"]; // 기본은 전체
+
   function renderRiskChart() {
     const container = document.getElementById("echart-risk");
     if (!container) return;
 
-    // 상단 타입 선택 드롭다운
-    const typeSelectHTML = `
-    <div style="padding:12px 16px 8px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px;">
-      <span style="font-weight:600; color:var(--gray-color);">조회 타입:</span>
-      <select id="risk-type-select" style="padding:6px 12px; border-radius:6px; border:1px solid var(--border2);">
-        <option value="전체">전체</option>
-        <option value="화재">화재</option>
-        <option value="화학물질">화학물질</option>
-      </select>
-    </div>`;
+    // 상단 타입 선택 체크박스
+    let html = `
+    <div style="padding:12px 20px 10px; border-bottom:1px solid var(--border); background:var(--lighter-bg);">
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; font-size:0.85rem;">
+        <span style="font-weight:600; color:var(--gray-color);">조회 타입:</span>
+        
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="checkbox" value="전체" ${currentTypes.includes("전체") ? "checked" : ""} onchange="toggleRiskType(this)"> 전체
+        </label>
+        
+        ${["화재", "화학물질", "추락", "소음", "전기", "기타"]
+          .map(
+            (cat) => `
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" value="${cat}" ${currentTypes.includes(cat) ? "checked" : ""} onchange="toggleRiskType(this)"> ${cat}
+          </label>
+        `,
+          )
+          .join("")}
+      </div>
+    </div>
 
-    container.innerHTML =
-      typeSelectHTML +
-      `
-    <div style="display:flex; gap:16px; padding:16px; overflow-x:auto; height:calc(100% - 60px);">
-      <div class="risk-chart-box"><div class="chart-title">월간 전체 발생</div><div id="chart-month-total" style="height:260px;"></div></div>
-      <div class="risk-chart-box"><div class="chart-title">주간 전체 발생</div><div id="chart-week-total" style="height:260px;"></div></div>
-      <div class="risk-chart-box"><div class="chart-title">월간 라인별</div><div id="chart-month-line" style="height:260px;"></div></div>
-      <div class="risk-chart-box"><div class="chart-title">주간 라인별</div><div id="chart-week-line" style="height:260px;"></div></div>
-    </div>`;
+    <div id="risk-charts-container" style="padding:16px; display:flex; flex-direction:column; gap:24px; overflow-y:auto; height:calc(100% - 68px);">
+      <!-- 타입별 4x1 가로 블록이 세로로 쌓임 -->
+    </div>
+  `;
 
-    // 스타일 (한 번만 추가)
-    if (!document.getElementById("risk-chart-style")) {
-      const style = document.createElement("style");
-      style.id = "risk-chart-style";
-      style.textContent = `
-      .risk-chart-box { min-width: 340px; border:1px solid var(--border); border-radius:8px; background:var(--lighter-bg); padding:12px; }
-      .chart-title { text-align:center; font-size:0.85rem; color:var(--gray-color); margin-bottom:10px; font-weight:600; }
+    container.innerHTML = html;
+    const containerEl = document.getElementById("risk-charts-container");
+
+    currentTypes.forEach((type) => {
+      const block = document.createElement("div");
+      block.style = `border:1px solid var(--border); border-radius:10px; background:var(--lighter-bg); padding:16px;`;
+
+      block.innerHTML = `
+      <div style="text-align:center; font-size:0.92rem; font-weight:600; margin-bottom:16px; color:var(--light-color);">
+        ${type === "전체" ? "전체 발생 추이" : type + " 발생 추이"}
+      </div>
+      <div style="display:flex; gap:16px; overflow-x:auto; padding-bottom:8px;">
+        <div style="min-width:340px;">
+          <div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:8px;">월간 발생 횟수</div>
+          <div id="chart-${type}-month-total" style="height:245px;"></div>
+        </div>
+        <div style="min-width:340px;">
+          <div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:8px;">주간 발생 횟수</div>
+          <div id="chart-${type}-week-total" style="height:245px;"></div>
+        </div>
+        <div style="min-width:340px;">
+          <div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:8px;">월간 라인별</div>
+          <div id="chart-${type}-month-line" style="height:245px;"></div>
+        </div>
+        <div style="min-width:340px;">
+          <div style="text-align:center; font-size:0.8rem; color:var(--gray-color); margin-bottom:8px;">주간 라인별</div>
+          <div id="chart-${type}-week-line" style="height:245px;"></div>
+        </div>
+      </div>
     `;
-      document.head.appendChild(style);
+      containerEl.appendChild(block);
+
+      renderFourCharts(type);
+    });
+  }
+
+  // 타입 체크박스 토글
+  window.toggleRiskType = function (checkbox) {
+    const type = checkbox.value;
+
+    if (type === "전체") {
+      if (checkbox.checked) {
+        currentTypes = ["전체", ...currentTypes.filter((t) => t !== "전체")];
+      } else {
+        currentTypes = currentTypes.filter((t) => t !== "전체");
+      }
+    } else {
+      if (checkbox.checked) {
+        if (!currentTypes.includes(type)) currentTypes.push(type);
+      } else {
+        currentTypes = currentTypes.filter((t) => t !== type);
+      }
     }
 
-    const selectedType = document.getElementById("risk-type-select").value;
+    // "전체"가 없으면 기본으로 다시 넣기 (사용자 경험 위해)
+    // if (currentTypes.length === 0) currentTypes = ["전체"];
 
-    // 데이터 필터링
-    let filteredIssues = issues;
-    if (selectedType !== "전체") {
-      filteredIssues = issues.filter((i) => i.category === selectedType);
-    }
+    renderRiskChart();
+  };
+
+  // 4개 그래프 생성 함수
+  function renderFourCharts(type) {
+    const filteredIssues =
+      type === "전체" ? issues : issues.filter((i) => i.category === type);
 
     // 월/주 그룹핑
     const monthMap = {},
@@ -704,7 +758,7 @@
     filteredIssues.forEach((issue) => {
       const d = new Date(issue.createdAt);
       const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      const weekKey = `${d.getFullYear()}-W${String(Math.ceil((d - new Date(d.getFullYear(), 0, 1)) / 86400000 / 7)).padStart(2, "0")}`;
+      const weekKey = `${d.getFullYear()}-W${String(Math.ceil(((d - new Date(d.getFullYear(), 0, 1)) / 86400000 + 1) / 7)).padStart(2, "0")}`;
 
       if (!monthMap[monthKey]) monthMap[monthKey] = [];
       if (!weekMap[weekKey]) weekMap[weekKey] = [];
@@ -716,8 +770,11 @@
     const weeks = Object.keys(weekMap).sort();
     const lines = ["A라인", "B라인", "C라인", "D라인"];
 
-    // 1. 월간 전체 발생 (Bar)
-    echarts.init(document.getElementById("chart-month-total")).setOption({
+    // ==================== 1. 월간 전체 발생 ====================
+    const c1 = echarts.init(
+      document.getElementById(`chart-${type}-month-total`),
+    );
+    c1.setOption({
       tooltip: { trigger: "axis" },
       xAxis: { type: "category", data: months },
       yAxis: { type: "value" },
@@ -726,12 +783,17 @@
           type: "bar",
           data: months.map((m) => monthMap[m]?.length || 0),
           itemStyle: { color: "#2f6fed" },
+          label: { show: true, position: "top", fontSize: 11 },
         },
       ],
     });
+    c1.on("click", (params) => showPeriodDetailModal(params.name, true, type)); // 월간 클릭
 
-    // 2. 주간 전체 발생 (Bar)
-    echarts.init(document.getElementById("chart-week-total")).setOption({
+    // ==================== 2. 주간 전체 발생 ====================
+    const c2 = echarts.init(
+      document.getElementById(`chart-${type}-week-total`),
+    );
+    c2.setOption({
       tooltip: { trigger: "axis" },
       xAxis: { type: "category", data: weeks },
       yAxis: { type: "value" },
@@ -740,96 +802,97 @@
           type: "bar",
           data: weeks.map((w) => weekMap[w]?.length || 0),
           itemStyle: { color: "#2f6fed" },
+          label: { show: true, position: "top", fontSize: 11 },
         },
       ],
     });
+    c2.on("click", (params) => showPeriodDetailModal(params.name, false, type)); // 주간 클릭
 
-    // 3. 월간 라인별 (Stacked Bar)
-    echarts.init(document.getElementById("chart-month-line")).setOption({
-      tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
+    // ==================== 3. 월간 라인별 (Line) ====================
+    const c3 = echarts.init(
+      document.getElementById(`chart-${type}-month-line`),
+    );
+    c3.setOption({
+      tooltip: { trigger: "axis" },
       legend: { bottom: 0 },
       xAxis: { type: "category", data: months },
       yAxis: { type: "value" },
       series: lines.map((line) => ({
         name: line,
-        type: "bar",
-        stack: "total",
+        type: "line",
+        smooth: true,
         data: months.map(
           (m) => monthMap[m]?.filter((i) => i.location === line).length || 0,
         ),
+        label: { show: true, position: "top", fontSize: 10 },
       })),
     });
+    c3.on("click", (params) => showPeriodDetailModal(params.name, true, type));
 
-    // 4. 주간 라인별 (Stacked Bar)
-    echarts.init(document.getElementById("chart-week-line")).setOption({
-      tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
+    // ==================== 4. 주간 라인별 (Line) ====================
+    const c4 = echarts.init(document.getElementById(`chart-${type}-week-line`));
+    c4.setOption({
+      tooltip: { trigger: "axis" },
       legend: { bottom: 0 },
       xAxis: { type: "category", data: weeks },
       yAxis: { type: "value" },
       series: lines.map((line) => ({
         name: line,
-        type: "bar",
-        stack: "total",
+        type: "line",
+        smooth: true,
         data: weeks.map(
           (w) => weekMap[w]?.filter((i) => i.location === line).length || 0,
         ),
+        label: { show: true, position: "top", fontSize: 10 },
       })),
     });
-
-    // 클릭 이벤트 (모든 차트에 공통 적용)
-    const chartIds = [
-      "chart-month-total",
-      "chart-week-total",
-      "chart-month-line",
-      "chart-week-line",
-    ];
-    chartIds.forEach((id) => {
-      const chart = echarts.getInstanceByDom(document.getElementById(id));
-      if (chart) {
-        chart.off("click"); // 중복 방지
-        chart.on("click", (params) => {
-          const periodKey = params.name; // 월 또는 주 키
-          const isMonth = id.includes("month");
-          showPeriodDetailModal(periodKey, isMonth, selectedType);
-        });
-      }
-    });
+    c4.on("click", (params) => showPeriodDetailModal(params.name, false, type));
   }
+
   function showPeriodDetailModal(periodKey, isMonth, typeFilter) {
     let filtered = issues;
-    if (typeFilter !== "전체")
+    if (typeFilter !== "전체") {
       filtered = filtered.filter((i) => i.category === typeFilter);
+    }
 
     const periodIssues = filtered.filter((issue) => {
       const d = new Date(issue.createdAt);
       const key = isMonth
         ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
-        : `${d.getFullYear()}-W${String(Math.ceil((d - new Date(d.getFullYear(), 0, 1)) / 86400000 / 7)).padStart(2, "0")}`;
+        : `${d.getFullYear()}-W${String(Math.ceil(((d - new Date(d.getFullYear(), 0, 1)) / 86400000 + 1) / 7)).padStart(2, "0")}`;
       return key === periodKey;
     });
 
-    // 간단한 테이블 모달 (기존 issue-table-container 스타일 재사용)
-    const html = `
-    <div style="padding:20px;">
-      <h3 style="margin:0 0 16px;">${periodKey} ${typeFilter === "전체" ? "" : typeFilter} 발생 이슈 (${periodIssues.length}건)</h3>
-      <table style="width:100%; border-collapse:collapse;">
-        <thead><tr style="background:#f8fafc;">
-          <th style="padding:10px; text-align:left;">ID</th>
-          <th style="padding:10px; text-align:left;">제목</th>
-          <th style="padding:10px; text-align:left;">카테고리</th>
-          <th style="padding:10px; text-align:left;">라인</th>
-          <th style="padding:10px; text-align:left;">위험도</th>
-        </tr></thead>
+    const modalHTML = `
+    <div style="padding:24px; max-width:1100px; width:95%;">
+      <h3 style="margin:0 0 20px; font-size:1.1rem;">
+        ${periodKey} ${typeFilter === "전체" ? "" : `(${typeFilter})`} 발생 이슈 
+        <span style="color:#2f6fed;">(${periodIssues.length}건)</span>
+      </h3>
+      
+      <table style="width:100%; border-collapse:collapse; background:white; border:1px solid var(--border);">
+        <thead>
+          <tr style="background:#f8fafc;">
+            <th style="padding:12px; text-align:left; border-bottom:1px solid var(--border);">ID</th>
+            <th style="padding:12px; text-align:left; border-bottom:1px solid var(--border);">제목</th>
+            <th style="padding:12px; text-align:left; border-bottom:1px solid var(--border);">카테고리</th>
+            <th style="padding:12px; text-align:left; border-bottom:1px solid var(--border);">라인</th>
+            <th style="padding:12px; text-align:left; border-bottom:1px solid var(--border);">위험도</th>
+            <th style="padding:12px; text-align:left; border-bottom:1px solid var(--border);">등록일</th>
+          </tr>
+        </thead>
         <tbody>
           ${periodIssues
             .map(
               (i) => `
-            <tr onclick="EnvSafety.openDetailModal(${i.id});document.getElementById('period-modal').style.display='none'" style="cursor:pointer;">
-              <td style="padding:10px;">${i.id}</td>
-              <td style="padding:10px;">${esc(i.title)}</td>
-              <td style="padding:10px;">${esc(i.category)}</td>
-              <td style="padding:10px;">${esc(i.location)}</td>
-              <td style="padding:10px;">${esc(i.severity)}</td>
+            <tr onclick="EnvSafety.openDetailModal(${i.id}); document.getElementById('period-modal').style.display='none'" 
+                style="cursor:pointer; transition:background 0.2s;">
+              <td style="padding:12px; border-bottom:1px solid var(--border);">${i.id}</td>
+              <td style="padding:12px; border-bottom:1px solid var(--border);">${esc(i.title)}</td>
+              <td style="padding:12px; border-bottom:1px solid var(--border);">${esc(i.category)}</td>
+              <td style="padding:12px; border-bottom:1px solid var(--border);">${esc(i.location)}</td>
+              <td style="padding:12px; border-bottom:1px solid var(--border);">${esc(i.severity)}</td>
+              <td style="padding:12px; border-bottom:1px solid var(--border);">${esc(i.createdAt)}</td>
             </tr>
           `,
             )
@@ -839,17 +902,18 @@
     </div>
   `;
 
-    // 모달 생성 (한 번만 생성)
     let modal = document.getElementById("period-modal");
     if (!modal) {
       modal = document.createElement("div");
       modal.id = "period-modal";
-      modal.style.cssText = `position:fixed; inset:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:99999;`;
+      modal.style.cssText = `position:fixed; inset:0; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center; z-index:99999;`;
       document.body.appendChild(modal);
     }
-    modal.innerHTML = `<div style="background:white; border-radius:12px; width:90%; max-width:1100px; max-height:85vh; overflow:auto;">${html}</div>`;
+
+    modal.innerHTML = modalHTML;
     modal.style.display = "flex";
 
+    // 배경 클릭 시 닫기
     modal.onclick = (e) => {
       if (e.target === modal) modal.style.display = "none";
     };
@@ -1566,8 +1630,9 @@
 
     dom8: {
       order: 4,
-      width: "760px",
-      height: "680px",
+      width: "auto", // ← 컨텐츠 크기에 맞춤
+      minWidth: "1200px", // 최소 4개 그래프가 예쁘게 보이도록
+      height: "auto",
       label: "작업 통계",
       icon: `
       <!-- 바 차트 아이콘 -->
