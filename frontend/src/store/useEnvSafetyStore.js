@@ -246,6 +246,39 @@ const SAMPLE_ISSUES = [
   },
 ];
 
+/** 패널이 서로 겹치지 않도록 레이아웃 정규화 (순서 유지, 왼쪽 위부터 채움) */
+const GRID_COLS = 25;
+const MAX_ROWS = 200;
+
+function normalizeLayout(layout, cols = GRID_COLS) {
+  if (!layout || layout.length === 0) return layout;
+  const result = [];
+  for (const item of layout) {
+    const id = item.id ?? item.i;
+    if (id == null) continue;
+    const w = Math.max(1, Math.min(cols, Number(item.w) || 1));
+    const h = Math.max(1, Number(item.h) || 1);
+    let placed = false;
+    for (let y = 0; y < MAX_ROWS && !placed; y++) {
+      for (let x = 0; x <= cols - w && !placed; x++) {
+        const overlaps = result.some(
+          (other) =>
+            x < other.x + other.w &&
+            x + w > other.x &&
+            y < other.y + other.h &&
+            y + h > other.y
+        );
+        if (!overlaps) {
+          result.push({ id, x, y, w, h });
+          placed = true;
+        }
+      }
+    }
+    if (!placed) result.push({ id, x: 0, y: result.length * 2, w, h });
+  }
+  return result;
+}
+
 export const useEnvSafetyStore = create((set, get) => ({
   issues: [],
   layout: [],
@@ -260,30 +293,60 @@ export const useEnvSafetyStore = create((set, get) => ({
     set({ isLoading: false });
   },
 
-  // 레이아웃 관련
-  setLayout: (newLayout) => set({ layout: newLayout }),
+  // layout 업데이트 시 항상 정규화 → 겹침 없이 간격 유지
+  setLayout: (newLayout) => {
+    const normalized = normalizeLayout(Array.isArray(newLayout) ? newLayout : [], GRID_COLS);
+    set({ layout: normalized });
+  },
+
   saveLayout: () => {
     const { layout } = get();
+    if (!Array.isArray(layout) || layout.length === 0) return;
+    const allXZero = layout.every((item) => item && Number(item.x) === 0);
+    if (allXZero) return; // 세로 한 줄로 깨진 레이아웃은 저장하지 않음
     localStorage.setItem("env_safety_panel_layout_v1", JSON.stringify(layout));
   },
+  // 패널이 서로 겹치지 않는 초기 배치 (25칸 그리드 기준)
+  getDefaultLayout: () => [
+    { id: "dom2", x: 0, y: 0, w: 7, h: 10 },
+    { id: "dom8", x: 7, y: 0, w: 6, h: 6 },
+    { id: "dom9", x: 13, y: 0, w: 7, h: 10 },
+    { id: "dom3", x: 0, y: 10, w: 5, h: 7 },
+    { id: "dom4", x: 5, y: 10, w: 4, h: 6 },
+    { id: "dom6", x: 9, y: 10, w: 4, h: 6 },
+    { id: "dom5", x: 13, y: 10, w: 4, h: 5 },
+    { id: "dom7", x: 17, y: 10, w: 4, h: 5 },
+  ],
+
+  resetLayout: () => {
+    const defaultLayout = get().getDefaultLayout();
+    const normalized = normalizeLayout(defaultLayout, GRID_COLS);
+    set({ layout: normalized });
+    localStorage.setItem("env_safety_panel_layout_v1", JSON.stringify(normalized));
+  },
+
   loadLayout: () => {
+    const defaultLayout = get().getDefaultLayout();
     const saved = localStorage.getItem("env_safety_panel_layout_v1");
     if (saved) {
-      set({ layout: JSON.parse(saved) });
-    } else {
-      // 기본 layout (PANEL_CONFIG 순서)
-      const defaultLayout = [
-        { id: "dom2", x: 0, y: 0, w: 6, h: 8 },
-        { id: "dom8", x: 6, y: 0, w: 6, h: 6 },
-        { id: "dom9", x: 12, y: 0, w: 6, h: 8 },
-        { id: "dom3", x: 0, y: 8, w: 4, h: 6 },
-        { id: "dom4", x: 4, y: 8, w: 4, h: 6 },
-        { id: "dom6", x: 8, y: 8, w: 4, h: 6 },
-        { id: "dom5", x: 12, y: 8, w: 4, h: 5 },
-        { id: "dom7", x: 16, y: 8, w: 4, h: 5 },
-      ];
-      set({ layout: defaultLayout });
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const allXZero = parsed.every((item) => item && Number(item.x) === 0);
+          const hasInvalidItems = parsed.some(
+            (item) =>
+              item == null ||
+              typeof item.x !== "number" ||
+              typeof item.y !== "number",
+          );
+          if (!allXZero && !hasInvalidItems) {
+            set({ layout: normalizeLayout(parsed, GRID_COLS) });
+            return;
+          }
+        }
+      } catch (_) {}
     }
+    set({ layout: normalizeLayout(defaultLayout, GRID_COLS) });
   },
 
   // 이슈 관련 액션들 (추후 확장)

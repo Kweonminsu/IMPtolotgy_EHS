@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { Responsive, WidthProvider } from 'react-grid-layout/legacy';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -8,79 +8,90 @@ import { useEnvSafetyStore, PANEL_CONFIG } from '../../store/useEnvSafetyStore';
 const ResponsiveGrid = WidthProvider(Responsive);
 
 export default function PanelCanvas() {
-  const { layout, setLayout, saveLayout, issues, isLoading, loadAllData } = useEnvSafetyStore();
+  const { 
+    layout, 
+    setLayout, 
+    saveLayout, 
+    loadLayout, 
+    loadAllData, 
+    issues 
+  } = useEnvSafetyStore();
 
-  // 초기 데이터 로드
+  // 컴포넌트 마운트와 동시에 레이아웃 로드 (동기)
   useEffect(() => {
+    loadLayout();      // store의 loadLayout 호출 → 기본 레이아웃 강제 적용
     loadAllData();
-    useEnvSafetyStore.getState().loadLayout();
   }, []);
 
-  // layout이 안정적으로 유지되도록 useMemo 사용 (이게 깜빡임의 핵심 원인!)
-  const stableLayout = useMemo(() => {
-    if (layout.length > 0) return layout;
-
-    // 기본 레이아웃 (겹치지 않게 x 좌표 넓게 배치)
-    return [
-      { id: 'dom2', x: 0,  y: 0,  w: 7,  h: 9 },
-      { id: 'dom8', x: 7,  y: 0,  w: 6,  h: 6 },
-      { id: 'dom9', x: 13, y: 0,  w: 7,  h: 9 },
-      { id: 'dom3', x: 0,  y: 9,  w: 5,  h: 7 },
-      { id: 'dom4', x: 5,  y: 9,  w: 5,  h: 7 },
-      { id: 'dom6', x: 10, y: 9,  w: 5,  h: 7 },
-      { id: 'dom5', x: 15, y: 9,  w: 5,  h: 6 },
-      { id: 'dom7', x: 20, y: 9,  w: 5,  h: 6 },
-    ];
-  }, [layout]);
-
+  // 레이아웃 변경 저장
   const onLayoutChange = (newLayout) => {
-    setLayout(newLayout);
+    const normalized = newLayout.map(item => ({
+      id: item.i,
+      x: item.x,
+      y: item.y,
+      w: item.w,
+      h: item.h,
+    }));
+    setLayout(normalized);
     saveLayout();
   };
 
-  if (isLoading) {
-    return <div className="panel-canvas" style={{ padding: '60px', textAlign: 'center' }}>로딩 중...</div>;
+  // layout이 아직 없으면 로딩 표시
+  if (layout.length === 0) {
+    return <div className="panel-canvas" style={{ padding: '100px', textAlign: 'center' }}>레이아웃 초기화 중...</div>;
   }
 
   return (
     <div className="panel-canvas">
       <ResponsiveGrid
         className="layout"
-        layouts={{ lg: stableLayout }}
-        breakpoints={{ lg: 1600, md: 1200, sm: 768 }}
-        cols={{ lg: 25, md: 20, sm: 12 }}
-        rowHeight={42}
-        margin={[16, 16]}
+        layouts={{ lg: layout }}           // md/sm도 동일하게 lg 사용
+        breakpoints={{ lg: 1600, md: 1200, sm: 900 }}
+        cols={{ lg: 25, md: 25, sm: 25 }}
+        rowHeight={46}
+        margin={[20, 20]}
+        containerPadding={[20, 20]}
+
         onLayoutChange={onLayoutChange}
-        compactType="vertical"
-        preventCollision={false}
+
+        compactType={null}
+        preventCollision={true}
         isResizable={true}
         isDraggable={true}
-        measureBeforeMount={true}        // ← 깜빡임 방지 핵심
-        useCSSTransforms={true}          // ← 성능 + 깜빡임 개선
+        draggableHandle=".drag-handle"
+
+        measureBeforeMount={true}
+        useCSSTransforms={true}
       >
-        {stableLayout.map((item) => {
+        {layout.map((item) => {
           const config = PANEL_CONFIG[item.id];
           if (!config) return null;
 
           return (
-            <div key={item.id} data-grid={item} className="draggable-panel">
-              {/* 드래그 핸들 */}
+            <div 
+              key={item.id} 
+              data-grid={item} 
+              className="draggable-panel"
+            >
               <div className="drag-handle">
                 <span style={{ marginRight: '8px' }}>{config.icon}</span>
                 {config.title}
               </div>
 
-              {/* 헤더 */}
               <div className="block-header">
                 <h2 className="block-title">
                   <span className="title-text">{config.title}</span>
                 </h2>
               </div>
 
-              {/* 내용 영역 (나중에 각 컴포넌트로 교체) */}
-              <div style={{ padding: '20px', minHeight: '160px', color: '#444', textAlign: 'center' }}>
-                {config.title} 패널<br />
+              <div style={{ 
+                padding: '24px', 
+                minHeight: '200px', 
+                color: '#444', 
+                textAlign: 'center',
+                background: '#fafafa'
+              }}>
+                {config.title} 내용 영역<br />
                 <small>이슈 {issues.length}개 로드됨</small>
               </div>
 

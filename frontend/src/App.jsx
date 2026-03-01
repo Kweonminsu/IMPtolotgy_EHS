@@ -1,7 +1,10 @@
 import PanelCanvas from './components/layout/PanelCanvas';
+import { useEnvSafetyStore } from './store/useEnvSafetyStore';
 import './styles/env_safety.css';
 
 function App() {
+  const resetLayout = useEnvSafetyStore((state) => state.resetLayout);
+
   return (
     <div className="env-safety-page" id="env-safety-root">
       {/* DOM1 헤더는 그대로 유지 */}
@@ -15,6 +18,12 @@ function App() {
             <p className="page-sub">산업현장 이슈 등록 · 체크리스트 · To-Do 관리</p>
           </div>
           <div className="header-right">
+            <button 
+              className="btn-reset-layout" 
+              onClick={() => useEnvSafetyStore.getState().resetLayout()}
+            >
+              레이아웃 초기화
+            </button>
             <button className="btn-primary">이슈 등록</button>
           </div>
         </div>
