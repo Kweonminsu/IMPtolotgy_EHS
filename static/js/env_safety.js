@@ -1686,7 +1686,7 @@
 
     dom8: {
       order: 4,
-      width: "auto", // ← 컨텐츠 크기에 맞춤
+      width: "1500px", // ← 컨텐츠 크기에 맞춤
       height: "auto",
       label: "작업 통계",
       icon: `
@@ -1737,8 +1737,8 @@
 
     dom6: {
       order: 6,
-      width: "450px",
-      height: "400px",
+      width: "490px",
+      height: "490px",
       label: "활동 타임라인",
       icon: `
       <!-- 타임라인 아이콘 -->
@@ -2041,7 +2041,9 @@
     const hasCustomSizes = layout.some(
       (item) => typeof item === "object" && item.width && item.height,
     );
-
+    if (localStorage.getItem(STORAGE_KEY) === null) {
+      setInitialPanelSizes();
+    }
     if (!hasCustomSizes) {
       console.log("localStorage에 크기 정보 없음 → PANEL_CONFIG 적용");
       setInitialPanelSizes();
@@ -2575,20 +2577,51 @@
    ⑫ 초기화
 ══════════════════════════════════════════════ */
   // 레이아웃 초기화
-  // 역할: PANEL_CONFIG 기본 설정으로 완전히 리셋 (순서, 크기, 제목 모두)
+  // 레이아웃 초기화 - 완전 리셋 버전 (위치 + 크기 모두 초기화)
   function resetLayout() {
-    // 1. localStorage 완전 초기화
+    // if (
+    //   !confirm(
+    //     "레이아웃을 완전히 초기 상태로 되돌리시겠습니까?\n(위치, 크기, 순서 모두 PANEL_CONFIG 기준으로 리셋됩니다)",
+    //   )
+    // ) {
+    //   return;
+    // }
+
+    // 1. localStorage 완전 삭제
+    localStorage.removeItem(STORAGE_KEY);
+
+    // 2. 모든 패널의 inline 스타일 완전 제거 (가장 중요!)
+    document.querySelectorAll(".draggable-panel").forEach((panel) => {
+      panel.style.width = "";
+      panel.style.height = "";
+      panel.style.minWidth = "";
+      panel.style.maxWidth = "";
+      panel.style.minHeight = "";
+      panel.style.maxHeight = "";
+      panel.style.flex = "";
+      panel.style.order = ""; // 순서도 초기화
+    });
+
+    // 3. layout을 PANEL_CONFIG 기본값으로 강제 설정
     layout = getDefaultLayout().map((id) => ({
-      id,
+      id: id,
       width: null,
       height: null,
     }));
+
+    // 4. 저장
     saveLayout();
 
-    // 2. 모든 초기화 한 번에 실행
+    // 5. 완전 초기화 실행
     initializePanels();
 
-    showToast("레이아웃이 초기화되었습니다.");
+    // 6. 데이터 다시 렌더링
+    renderAll();
+
+    showToast(
+      "레이아웃이 완전히 초기화되었습니다. (위치·크기 모두 리셋)",
+      "success",
+    );
   }
 
   //  초기 크기 설정 추가
